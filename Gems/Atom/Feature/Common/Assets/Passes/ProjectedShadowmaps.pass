@@ -4,8 +4,8 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "SpotLightShadowmapsTemplate",
-            "PassClass": "SpotLightShadowmapsPass",
+            "Name": "ProjectedShadowmapsTemplate",
+            "PassClass": "ProjectedShadowmapsPass",
             "Slots": [
                 {
                     "Name": "Shadowmap",
