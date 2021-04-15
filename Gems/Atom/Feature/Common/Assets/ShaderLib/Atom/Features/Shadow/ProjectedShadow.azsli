@@ -20,23 +20,24 @@
 #include "JitterTablePcf.azsli"
 #include "Shadow.azsli"
 
-// SpotLightShadow calculates lit/shadowed for a spot light.
-class SpotLightShadow
+// ProjectedShadow calculates shadowed area projected from a light.
+class ProjectedShadow
 {
     //////////
     // public method
 
-    //! This calculates visibility of the surface from the spot light.
-    //! @param lightIndex spot light index
+    //! This calculates visibility of the surface from a light source.
+    //! @param viewPosition position of the shadow casting view
     //! @param worldPosition surface position in the world coordinate.
     //! @return 1.0 if lit, 0.0 if shadowed.
     static float GetVisibility(
-        uint lightIndex,
+        uint shadowId,
+        float3 viewPosition,
         float3 worldPosition,
         float3 lightDirection,
         float3 normalVector);
 
-    static float GetThickness(uint lightIndex, float3 worldPosition);
+    static float GetThickness(uint shadowIndex, float3 worldPosition);
 
     //////////
     // private methods
@@ -56,9 +57,9 @@ class SpotLightShadow
         uint jitterIndex);
     void SetShadowPosition();
     float3 GetAtlasPosition(float2 texturePosition);
-    static float UnprojectDepth(uint lightIndex, float depthBufferValue);
+    static float UnprojectDepth(uint shadowIndex, float depthBufferValue);
 
-    uint m_lightIndex;
+    float3 m_viewPosition;
     uint m_shadowIndex;
     float3 m_worldPosition;
     float3 m_lightDirection;
@@ -66,28 +67,31 @@ class SpotLightShadow
     float3 m_shadowPosition;
 };
 
-float SpotLightShadow::GetVisibility(
-    uint lightIndex, 
+float ProjectedShadow::GetVisibility(
+    uint shadowIndex,
+    float3 viewPosition, 
     float3 worldPosition,
     float3 lightDirection,
     float3 normalVector)
 {
-    SpotLightShadow shadow;
-    shadow.m_lightIndex = lightIndex;
-    shadow.m_shadowIndex = ViewSrg::m_spotLights[lightIndex].m_shadowIndex;
+    // If no shadow, early return.
+    if (shadowIndex == 0xFFFF)
+    {
+        return 1.0;
+    }
+
+    ProjectedShadow shadow;
+    shadow.m_viewPosition = viewPosition;
+    shadow.m_shadowIndex = shadowIndex;
     shadow.m_worldPosition = worldPosition;
     shadow.m_lightDirection = lightDirection;
     shadow.m_normalVector = normalVector;
     shadow.SetShadowPosition();
 
-    // If no shadow, early return.
-    if (shadow.m_shadowIndex < 0)
-    {
-        return 1.0;
-    }
-
     float visibility = 1.;
-    switch (ViewSrg::m_spotLightShadows[shadow.m_shadowIndex].m_shadowFilterMethod)
+    // Filter method is stored in top 16 bits.
+    uint filterMethod = ViewSrg::m_projectedShadows[shadow.m_shadowIndex].m_shadowFilterMethod & 0x0000FFFF;
+    switch (filterMethod)
     {
         case ViewSrg::ShadowFilterMethodNone:
             visibility = shadow.GetVisibilityNoFilter();
@@ -106,9 +110,9 @@ float SpotLightShadow::GetVisibility(
     return saturate(visibility);
 }    
 
-float SpotLightShadow::UnprojectDepth(uint lightIndex, float depthBufferValue)
+float ProjectedShadow::UnprojectDepth(uint shadowIndex, float depthBufferValue)
 {   
-    // Unproject the perspective matrix that was built in SpotLightFeatureProcessor.cpp
+    // Unproject the perspective matrix that was built in ProjectedShadowFeatureProcessor.cpp
     // (Right-hand with non-reversed depth)
     // Should look something like the following:    
     // [... ... ... ...][x]
@@ -117,33 +121,40 @@ float SpotLightShadow::UnprojectDepth(uint lightIndex, float depthBufferValue)
     // [... ... -1  ...][1]
     // unprojectConstants contains the A and B values
     
-    const float2 unprojectConstants = ViewSrg::m_spotLightShadows[lightIndex].m_unprojectConstants;
+    const float2 unprojectConstants = ViewSrg::m_projectedShadows[shadowIndex].m_unprojectConstants;
     return -unprojectConstants.y / (depthBufferValue + unprojectConstants.x);
 }
 
-float SpotLightShadow::GetThickness(uint lightIndex, float3 worldPosition)
+float ProjectedShadow::GetThickness(uint shadowIndex, float3 worldPosition)
 {
-    SpotLightShadow shadow;
-    shadow.m_lightIndex = lightIndex;
+    // If no shadow, early return.
+    if (shadowIndex == 0xFFFF)
+    {
+        return 0.0;
+    }
+
+    ProjectedShadow shadow;
     shadow.m_worldPosition = worldPosition;
-    shadow.m_shadowIndex = ViewSrg::m_spotLights[lightIndex].m_shadowIndex;
+    shadow.m_shadowIndex = shadowIndex;
     shadow.SetShadowPosition();
     return shadow.GetThickness();
 }
 
-float SpotLightShadow::GetVisibilityNoFilter()
+float ProjectedShadow::GetVisibilityNoFilter()
 {
     return IsShadowed(m_shadowPosition) ? 0. : 1.;
 }
 
-float SpotLightShadow::GetVisibilityPcf()
+float ProjectedShadow::GetVisibilityPcf()
 {
-    if (ViewSrg::m_spotLightShadows[m_shadowIndex].m_pcfFilterMethod == PcfFilterMethod_Bicubic)
+    // PCF filter method is stored in bottom 16 bits.
+    const uint pcfFilterMethod = ViewSrg::m_projectedShadows[m_shadowIndex].m_shadowFilterMethod >> 16;
+    if (pcfFilterMethod == PcfFilterMethod_Bicubic)
     {
         return SamplePcfBicubic();
     }
 
-    const uint predictionCount = ViewSrg::m_spotLightShadows[m_shadowIndex].m_predictionSampleCount;
+    const uint predictionCount = ViewSrg::m_projectedShadows[m_shadowIndex].m_predictionSampleCount;
 
     if (predictionCount <= 1)
     {
@@ -187,7 +198,7 @@ float SpotLightShadow::GetVisibilityPcf()
     // we calculate the more precious lit ratio in the area.
     const uint filteringCount = max(
         predictionCount,
-        ViewSrg::m_spotLightShadows[m_shadowIndex].m_filteringSampleCount);
+        ViewSrg::m_projectedShadows[m_shadowIndex].m_filteringSampleCount);
 
     for (; jitterIndex < filteringCount; ++jitterIndex)
     {
@@ -204,26 +215,26 @@ float SpotLightShadow::GetVisibilityPcf()
     return (filteringCount - shadowedCount) * 1. / filteringCount;
 }
 
-float SpotLightShadow::GetVisibilityEsm()
+float ProjectedShadow::GetVisibilityEsm()
 {
     static const float PixelMargin = 1.5; // avoiding artifact on the edge of shadowmap.
 
-    const uint size = ViewSrg::m_spotLightShadows[m_shadowIndex].m_shadowmapSize;
+    const uint size = ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapSize;
     if (size <= 1)
     {
         return 1.; // There is no shadowmap for this light.
     }
 
     const float invAtlasSize = ViewSrg::m_invShadowmapAtlasSize;
-    const Texture2DArray<float> expShadowmap = PassSrg::m_spotLightExponentialShadowmap;
+    const Texture2DArray<float> expShadowmap = PassSrg::m_projectedExponentialShadowmap;
 
     if (m_shadowPosition.x >= 0 && m_shadowPosition.x * size < size - PixelMargin &&
         m_shadowPosition.y >= 0 && m_shadowPosition.y * size < size - PixelMargin)
     {
         const float3 coefficients = float3(
-            ViewSrg::m_esmsSpot[m_shadowIndex].m_n_f_n,
-            ViewSrg::m_esmsSpot[m_shadowIndex].m_n_f,
-            ViewSrg::m_esmsSpot[m_shadowIndex].m_f);
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f_n,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_f);
         if (coefficients.x == 0.) 
         {
             return 1.;
@@ -243,26 +254,26 @@ float SpotLightShadow::GetVisibilityEsm()
     return 1.;
 }
 
-float SpotLightShadow::GetVisibilityEsmPcf()
+float ProjectedShadow::GetVisibilityEsmPcf()
 {
     static const float PixelMargin = 1.5; // avoiding artifact on the edge of shadowmap;
 
-    const uint size = ViewSrg::m_spotLightShadows[m_shadowIndex].m_shadowmapSize;
+    const uint size = ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapSize;
     if (size <= 1)
     {
         return 1.; // There is no shadowmap for this light.
     }
 
     const float invAtlasSize = ViewSrg::m_invShadowmapAtlasSize;
-    const Texture2DArray<float> expShadowmap = PassSrg::m_spotLightExponentialShadowmap;
+    const Texture2DArray<float> expShadowmap = PassSrg::m_projectedExponentialShadowmap;
 
     if (m_shadowPosition.x >= 0 && m_shadowPosition.x * size < size - PixelMargin &&
         m_shadowPosition.y >= 0 && m_shadowPosition.y * size < size - PixelMargin)
     {
         const float3 coefficients = float3(
-            ViewSrg::m_esmsSpot[m_shadowIndex].m_n_f_n,
-            ViewSrg::m_esmsSpot[m_shadowIndex].m_n_f,
-            ViewSrg::m_esmsSpot[m_shadowIndex].m_f);
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f_n,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_f);
         if (coefficients.x == 0.)
         {
             return 1.;
@@ -292,18 +303,18 @@ float SpotLightShadow::GetVisibilityEsmPcf()
     return 1.;
 }
 
-float SpotLightShadow::GetThickness()
+float ProjectedShadow::GetThickness()
 {
     static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
 
-    const uint size = ViewSrg::m_spotLightShadows[m_shadowIndex].m_shadowmapSize;
+    const uint size = ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapSize;
     if (size <= 1)
     {
         return 0.;
     }
 
     const float invAtlasSize = ViewSrg::m_invShadowmapAtlasSize;
-    const Texture2DArray<float> shadowmap = PassSrg::m_spotLightShadowmaps;
+    const Texture2DArray<float> shadowmap = PassSrg::m_projectedShadowmaps;
 
     if (m_shadowPosition.x >= 0 && m_shadowPosition.x * size < size - PixelMargin &&
         m_shadowPosition.y >= 0 && m_shadowPosition.y * size < size - PixelMargin)
@@ -320,17 +331,17 @@ float SpotLightShadow::GetThickness()
     return 0.;
 }
 
-float SpotLightShadow::SamplePcfBicubic()
+float ProjectedShadow::SamplePcfBicubic()
 {
-    const uint filteringSampleCount = ViewSrg::m_spotLightShadows[m_shadowIndex].m_filteringSampleCount;
+    const uint filteringSampleCount = ViewSrg::m_projectedShadows[m_shadowIndex].m_filteringSampleCount;
     const float3 atlasPosition = GetAtlasPosition(m_shadowPosition.xy);   
 
     SampleShadowMapBicubicParameters param;
-    param.shadowMap = PassSrg::m_spotLightShadowmaps;
+    param.shadowMap = PassSrg::m_projectedShadowmaps;
     param.shadowPos = float3(atlasPosition.xy * ViewSrg::m_invShadowmapAtlasSize, atlasPosition.z);
     param.shadowMapSize = ViewSrg::m_shadowmapAtlasSize;
     param.invShadowMapSize = ViewSrg::m_invShadowmapAtlasSize;
-    param.comparisonValue = m_shadowPosition.z;
+    param.comparisonValue = m_shadowPosition.z - ViewSrg::m_projectedShadows[m_shadowIndex].m_bias;
     param.samplerState = SceneSrg::m_hwPcfSampler;
 
     if (filteringSampleCount <= 4)       
@@ -347,20 +358,18 @@ float SpotLightShadow::SamplePcfBicubic()
     }
 }
 
-bool SpotLightShadow::IsShadowed(float3 shadowPosition)
+bool ProjectedShadow::IsShadowed(float3 shadowPosition)
 {
     static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
 
-    ViewSrg::SpotLightShadow shadow = ViewSrg::m_spotLightShadows[m_shadowIndex];
-
-    const uint size = shadow.m_shadowmapSize;
+    const uint size = ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapSize;
     if (size <= 1)
     {
         return false; // There is no shadowmap for this light.
     }
 
     const float invAtlasSize = ViewSrg::m_invShadowmapAtlasSize;
-    const Texture2DArray<float> shadowmap = PassSrg::m_spotLightShadowmaps;
+    const Texture2DArray<float> shadowmap = PassSrg::m_projectedShadowmaps;
 
     if (shadowPosition.x >= 0 && shadowPosition.x * size < size - PixelMargin &&
         shadowPosition.y >= 0 && shadowPosition.y * size < size - PixelMargin)
@@ -370,7 +379,8 @@ bool SpotLightShadow::IsShadowed(float3 shadowPosition)
             PassSrg::LinearSampler,
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z)).r;
         const float depthDiff = depthInShadowmap - shadowPosition.z;
-        if (depthDiff < -shadow.m_bias)
+        float bias = ViewSrg::m_projectedShadows[m_shadowIndex].m_bias;
+        if (depthDiff < -bias)
         {
             return true;
         }
@@ -379,23 +389,19 @@ bool SpotLightShadow::IsShadowed(float3 shadowPosition)
     return false;
 }
 
-bool SpotLightShadow::IsShadowedWithJitter(
+bool ProjectedShadow::IsShadowedWithJitter(
     float3 jitterUnitX,
     float3 jitterUnitY,
     float jitterDepthDiffBase,
     uint jitterIndex)
-{
-    ViewSrg::SpotLightShadow shadow = ViewSrg::m_spotLightShadows[m_shadowIndex];
+{    
+    ViewSrg::ProjectedShadow shadow = ViewSrg::m_projectedShadows[m_shadowIndex];
     const float4x4 depthBiasMatrix = shadow.m_depthBiasMatrix;
     const float boundaryScale = shadow.m_boundaryScale;
 
-    ViewSrg::SpotLight spotLight = ViewSrg::m_spotLights[m_lightIndex];
-    float3 shadowCasterPosition = spotLight.m_position;
-
-    const float outerConeAngle = spotLight.m_outerConeAngle;
     const float2 jitterXY = g_jitterTablePcf[jitterIndex];
 
-    const float dist = distance(m_worldPosition, shadowCasterPosition);
+    const float dist = distance(m_worldPosition, m_viewPosition);
     const float boundaryRadius = dist * tan(boundaryScale);
     // jitterWorldXY is the jittering diff vector from the lighted point on the surface
     // in the world space.  It is remarked as "v_J" in the comment
@@ -412,18 +418,18 @@ bool SpotLightShadow::IsShadowedWithJitter(
     return IsShadowed(jitteredShadowmapHomogeneous.xyz / jitteredShadowmapHomogeneous.w);
 }
 
-void SpotLightShadow::SetShadowPosition()
+void ProjectedShadow::SetShadowPosition()
 {
-    const float4x4 depthBiasMatrix = ViewSrg::m_spotLightShadows[m_shadowIndex].m_depthBiasMatrix;
+    const float4x4 depthBiasMatrix = ViewSrg::m_projectedShadows[m_shadowIndex].m_depthBiasMatrix;
     float4 shadowPositionHomogeneous = mul(depthBiasMatrix, float4(m_worldPosition, 1));
     m_shadowPosition = shadowPositionHomogeneous.xyz / shadowPositionHomogeneous.w;
 }
 
-float3 SpotLightShadow::GetAtlasPosition(float2 texturePosition)
+float3 ProjectedShadow::GetAtlasPosition(float2 texturePosition)
 {
-    const uint2 originInSlice = ViewSrg::m_spotLightShadows[m_shadowIndex].m_shadowmapOriginInSlice;
-    const uint shadowmapSize = ViewSrg::m_spotLightShadows[m_shadowIndex].m_shadowmapSize;
-    const uint slice = ViewSrg::m_spotLightShadows[m_shadowIndex].m_shadowmapArraySlice;
+    const uint2 originInSlice = ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapOriginInSlice;
+    const uint shadowmapSize = ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapSize;
+    const uint slice = ViewSrg::m_projectedShadows[m_shadowIndex].m_shadowmapArraySlice;
 
     const float2 coordInTexture = texturePosition * shadowmapSize + originInSlice;
 

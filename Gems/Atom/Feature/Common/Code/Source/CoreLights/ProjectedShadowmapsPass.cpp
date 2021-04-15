@@ -14,19 +14,19 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassAttachment.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
-#include <CoreLights/SpotLightShadowmapsPass.h>
+#include <CoreLights/ProjectedShadowmapsPass.h>
 #include <AzCore/std/iterator.h>
 
 namespace AZ
 {
     namespace Render
     {
-        RPI::Ptr<SpotLightShadowmapsPass> SpotLightShadowmapsPass::Create(const RPI::PassDescriptor& descriptor)
+        RPI::Ptr<ProjectedShadowmapsPass> ProjectedShadowmapsPass::Create(const RPI::PassDescriptor& descriptor)
         {
-            return aznew SpotLightShadowmapsPass(descriptor);
+            return aznew ProjectedShadowmapsPass(descriptor);
         }
 
-        SpotLightShadowmapsPass::SpotLightShadowmapsPass(const RPI::PassDescriptor& descriptor)
+        ProjectedShadowmapsPass::ProjectedShadowmapsPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
         {
             const RPI::RasterPassData* passData = RPI::PassUtils::GetPassData<RPI::RasterPassData>(descriptor);
@@ -43,7 +43,7 @@ namespace AZ
             UpdateShadowmapSizes(shadowmapSizes);
         }
 
-        SpotLightShadowmapsPass::~SpotLightShadowmapsPass()
+        ProjectedShadowmapsPass::~ProjectedShadowmapsPass()
         {
             if (m_drawListTag.IsValid())
             {
@@ -52,12 +52,12 @@ namespace AZ
             }
         }
 
-        bool SpotLightShadowmapsPass::IsOfRenderPipeline(const RPI::RenderPipeline& renderPipeline) const
+        bool ProjectedShadowmapsPass::IsOfRenderPipeline(const RPI::RenderPipeline& renderPipeline) const
         {
             return &renderPipeline == m_pipeline;         
         }
 
-        const RPI::PipelineViewTag& SpotLightShadowmapsPass::GetPipelineViewTagOfChild(size_t childIndex)
+        const RPI::PipelineViewTag& ProjectedShadowmapsPass::GetPipelineViewTagOfChild(size_t childIndex)
         {
             m_childrenPipelineViewTags.reserve(childIndex + 1);
             while (m_childrenPipelineViewTags.size() <= childIndex)
@@ -69,7 +69,7 @@ namespace AZ
             return m_childrenPipelineViewTags[childIndex];
         }
 
-        void SpotLightShadowmapsPass::UpdateShadowmapSizes(const AZStd::vector<ShadowmapSizeWithIndices>& sizes)
+        void ProjectedShadowmapsPass::UpdateShadowmapSizes(const AZStd::vector<ShadowmapSizeWithIndices>& sizes)
         {
             m_sizes = sizes;
             m_updateChildren = true;
@@ -83,7 +83,7 @@ namespace AZ
             m_atlas.Finalize();
         }
 
-        void SpotLightShadowmapsPass::UpdateChildren()
+        void ProjectedShadowmapsPass::UpdateChildren()
         {
             if (!m_updateChildren)
             {
@@ -141,22 +141,22 @@ namespace AZ
             }
         }
 
-        ShadowmapSize SpotLightShadowmapsPass::GetShadowmapAtlasSize() const
+        ShadowmapSize ProjectedShadowmapsPass::GetShadowmapAtlasSize() const
         {
             return m_atlas.GetBaseShadowmapSize();
         }
 
-        ShadowmapAtlas::Origin SpotLightShadowmapsPass::GetOriginInAtlas(uint16_t index) const
+        ShadowmapAtlas::Origin ProjectedShadowmapsPass::GetOriginInAtlas(uint16_t index) const
         {
             return m_atlas.GetOrigin(index);
         }
 
-        ShadowmapAtlas& SpotLightShadowmapsPass::GetShadowmapAtlas()
+        ShadowmapAtlas& ProjectedShadowmapsPass::GetShadowmapAtlas()
         {
             return m_atlas;
         }
 
-        void SpotLightShadowmapsPass::BuildAttachmentsInternal()
+        void ProjectedShadowmapsPass::BuildAttachmentsInternal()
         {
             UpdateChildren();
 
@@ -164,10 +164,10 @@ namespace AZ
             RPI::Ptr<RPI::PassAttachment> attachment = m_ownedAttachments.front();
             if (!attachment)
             {
-                AZ_Assert(false, "[SpotLightShadowmapsPass %s] Cannot find shadowmap image attachment.", GetPathName().GetCStr());
+                AZ_Assert(false, "[ProjectedShadowmapsPass %s] Cannot find shadowmap image attachment.", GetPathName().GetCStr());
                 return;
             }
-            AZ_Assert(attachment->m_descriptor.m_type == RHI::AttachmentType::Image, "[SpotLightShadowmapsPass %s] requires an image attachment", GetPathName().GetCStr());
+            AZ_Assert(attachment->m_descriptor.m_type == RHI::AttachmentType::Image, "[ProjectedShadowmapsPass %s] requires an image attachment", GetPathName().GetCStr());
 
             RPI::PassAttachmentBinding& binding = GetOutputBinding(0);
             binding.m_attachment = attachment;
@@ -180,7 +180,7 @@ namespace AZ
             Base::BuildAttachmentsInternal();
         }
 
-        void SpotLightShadowmapsPass::GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const
+        void ProjectedShadowmapsPass::GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const
         {
             const size_t childrenCount = GetChildren().size();
             AZ_Assert(m_childrenPipelineViewTags.size() >= childrenCount, "There are not enough pipeline view tags.");
@@ -190,7 +190,7 @@ namespace AZ
             }
         }
 
-        void SpotLightShadowmapsPass::GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, RPI::PassesByDrawList& outPassesByDrawList, const RPI::PipelineViewTag& viewTag) const
+        void ProjectedShadowmapsPass::GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, RPI::PassesByDrawList& outPassesByDrawList, const RPI::PipelineViewTag& viewTag) const
         {
             if (AZStd::find(
                 m_childrenPipelineViewTags.begin(),
@@ -203,9 +203,9 @@ namespace AZ
             }
         }
 
-        RPI::Ptr<ShadowmapPass> SpotLightShadowmapsPass::CreateChild(size_t childIndex)
+        RPI::Ptr<ShadowmapPass> ProjectedShadowmapsPass::CreateChild(size_t childIndex)
         {
-            const Name passName{ AZStd::string::format("SpotLightShadowmapPass.%zu", childIndex) };
+            const Name passName{ AZStd::string::format("ProjectedShadowmapPass.%zu", childIndex) };
 
             auto passData = AZStd::make_shared<RPI::RasterPassData>();
             passData->m_drawListTag = m_drawListTagName;
@@ -214,7 +214,7 @@ namespace AZ
             return ShadowmapPass::CreateWithPassRequest(passName, passData);
         }
 
-        void SpotLightShadowmapsPass::SetChildrenCount(size_t childrenCount)
+        void ProjectedShadowmapsPass::SetChildrenCount(size_t childrenCount)
         {
             // Reserve Tags
             if (childrenCount > 0)
