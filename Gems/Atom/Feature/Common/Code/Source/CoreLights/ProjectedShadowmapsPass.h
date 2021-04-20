@@ -23,16 +23,16 @@ namespace AZ
 {
     namespace Render
     {
-        //! SpotLightShadowmapsPass owns ShadowmapPasses for Spot Lights.
-        class SpotLightShadowmapsPass final
+        //! ProjectedShadowmapsPass owns shadowmap passes for projected lights.
+        class ProjectedShadowmapsPass final
             : public RPI::ParentPass
         {
-            AZ_RPI_PASS(SpotLightShadowmapsPass);
+            AZ_RPI_PASS(ProjectedShadowmapsPass);
             using Base = RPI::ParentPass;
 
         public:
-            AZ_CLASS_ALLOCATOR(SpotLightShadowmapsPass, SystemAllocator, 0);
-            AZ_RTTI(SpotLightShadowmapsPass, "00024B13-1095-40FA-BEC3-B0F68110BEA2", Base);
+            AZ_CLASS_ALLOCATOR(ProjectedShadowmapsPass, SystemAllocator, 0);
+            AZ_RTTI(ProjectedShadowmapsPass, "00024B13-1095-40FA-BEC3-B0F68110BEA2", Base);
 
             static constexpr uint16_t InvalidIndex = ~0;
             struct ShadowmapSizeWithIndices
@@ -41,8 +41,8 @@ namespace AZ
                 uint16_t m_shadowIndexInSrg = InvalidIndex;
             };
 
-            virtual ~SpotLightShadowmapsPass();
-            static RPI::Ptr<SpotLightShadowmapsPass> Create(const RPI::PassDescriptor& descriptor);
+            virtual ~ProjectedShadowmapsPass();
+            static RPI::Ptr<ProjectedShadowmapsPass> Create(const RPI::PassDescriptor& descriptor);
 
             //! This returns true if this pass is of the given render pipeline. 
             bool IsOfRenderPipeline(const RPI::RenderPipeline& renderPipeline) const;
@@ -50,8 +50,8 @@ namespace AZ
             //! This returns the pipeline view tag used in shadowmap passes.
             const RPI::PipelineViewTag& GetPipelineViewTagOfChild(size_t childIndex);
 
-            //! This update shadowmap sizes for each spot light index.
-            //! @param sizes shadowmap sizes for each spot light index.
+            //! This update shadowmap sizes for each projected light shadow index.
+            //! @param sizes shadowmap sizes for each projected light shadow index.
             void UpdateShadowmapSizes(const AZStd::vector<ShadowmapSizeWithIndices>& sizes);
 
             //! This returns the image size(width/height) of shadowmap atlas.
@@ -67,8 +67,8 @@ namespace AZ
             ShadowmapAtlas& GetShadowmapAtlas();
 
         private:
-            SpotLightShadowmapsPass() = delete;
-            explicit SpotLightShadowmapsPass(const RPI::PassDescriptor& descriptor);
+            ProjectedShadowmapsPass() = delete;
+            explicit ProjectedShadowmapsPass(const RPI::PassDescriptor& descriptor);
 
             // RPI::Pass overrides...
             void BuildAttachmentsInternal() override;
