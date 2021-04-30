@@ -9,28 +9,15 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-
 #pragma once
 
-option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opacity_mode;
+#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/TagRegistry.h>
 
-void CheckClipping(float alpha, float opacityFactor)
+namespace AZ
 {
-    switch(o_opacity_mode)
+    namespace RHI
     {
-        case OpacityMode::Cutout:
-        {
-            if(alpha)
-            {
-                clip(alpha - (1.0 - opacityFactor));
-            }
-            else
-            {
-                clip(-1);
-            }
-            break;
-        }
-        default:
-            break;
+        using DrawFilterTagRegistry = TagRegistry<DrawFilterTag, Limits::Pipeline::DrawFilterTagCountMax>;
     }
 }
