@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Atom_RPI_Traits_Platform.h
-    Atom_RPI_Traits_Windows.h
-    ../Common/VisualStudio/Natvis/shaderoptiongroup.natvis
+    BootstrapSystemComponent_Traits_Platform.h
 )
+
