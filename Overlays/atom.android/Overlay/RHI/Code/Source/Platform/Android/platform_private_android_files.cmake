@@ -6,9 +6,6 @@
 #
 #
 
-set(LY_BUILD_DEPENDENCIES
-    PRIVATE
-        d3d12
-        dxgi
-        dxguid
+set(FILES
+    ../Common/Unimplemented/Empty_Unimplemented.cpp
 )
