@@ -6,4 +6,7 @@
 #
 #
 
-add_subdirectory(Common)
+set(LY_COMPILE_OPTIONS
+    PRIVATE
+        -fexceptions
+)

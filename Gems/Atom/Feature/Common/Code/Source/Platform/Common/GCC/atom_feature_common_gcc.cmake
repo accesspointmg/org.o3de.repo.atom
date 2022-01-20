@@ -6,4 +6,8 @@
 #
 #
 
-add_subdirectory(DebugCamera)
+set_source_files_properties(
+    Source/LuxCore/LuxCoreRenderer.cpp
+    PROPERTIES
+        COMPILE_OPTIONS -fexceptions
+)
