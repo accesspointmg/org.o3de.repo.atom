@@ -5,18 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <Viewport/InputController/Behavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    //! No action taken
-    class IdleBehavior final
-        : public Behavior
+    class IdleBehavior final : public ViewportInputBehavior
     {
     public:
-        IdleBehavior() = default;
+        IdleBehavior(ViewportInputBehaviorControllerInterface* controller);
         virtual ~IdleBehavior() = default;
     };
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework
