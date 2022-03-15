@@ -44,8 +44,13 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
+<<<<<<< HEAD
+                        "Pass": "ChromaticAberrationPass",
+                        "Attachment": "Output"
+=======
                         "Pass": "EditorModeFeedbackPassParent",
                         "Attachment": "OutputColor"
+>>>>>>> development
                     }
                 },
                 {
@@ -204,19 +209,13 @@
                     ]
                 },
                 {
+<<<<<<< HEAD
                     "Name": "ChromaticAberrationPass",
                     "TemplateName": "ChromaticAberrationTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Input",
-			                "AttachmentRef": {
-                                "Pass": "ContrastAdaptiveSharpeningPass",
-                                "Attachment": "OutputColor"
-			                }
-			            }
-		            ]
-		        },
-		        {
+=======
                     "Name": "EditorModeFeedbackPassParent",
                     "TemplateName": "EditorModeFeedbackParentTemplate",
                     "Enabled": true,
@@ -230,9 +229,10 @@
                         },
                         {
                             "LocalSlot": "InputColor",
+>>>>>>> development
                             "AttachmentRef": {
-                                "Pass": "ChromaticAberrationPass",
-                                "Attachment": "Output"
+                                "Pass": "ContrastAdaptiveSharpeningPass",
+                                "Attachment": "OutputColor"
                             }
                         }
                     ]
