@@ -3,25 +3,21 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{D8CC87B8-354D-4A78-8543-97F4CD62BB6C}",
-        "category": "Math Functions",
-        "title": "clamp",
+        "id": "{83A5C349-1E8F-4D26-85DD-193B43182835}",
+        "category": "Constants",
+        "title": "Float4x4 Constant",
         "inputSlots": [
             {
-                "name": "inValue",
-                "displayName": "Value",
-                "description": "Value",
+                "name": "inRow1",
+                "displayName": "Row1",
+                "description": "Row1",
                 "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
+                    "float4"
                 ],
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
-                        0.0,
+                        1.0,
                         0.0,
                         0.0,
                         0.0
@@ -34,21 +30,17 @@
                 }
             },
             {
-                "name": "inMin",
-                "displayName": "Min",
-                "description": "Min",
+                "name": "inRow2",
+                "displayName": "Row2",
+                "description": "Row2",
                 "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
+                    "float4"
                 ],
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
                         0.0,
-                        0.0,
+                        1.0,
                         0.0,
                         0.0
                     ]
@@ -60,15 +52,33 @@
                 }
             },
             {
-                "name": "inMax",
-                "displayName": "Max",
-                "description": "Max",
+                "name": "inRow3",
+                "displayName": "Row3",
+                "description": "Row3",
                 "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
+                    "float4"
+                ],
+                "defaultValue": {
+                    "$type": "Vector4",
+                    "Value": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inRow4",
+                "displayName": "Row4",
+                "description": "Row4",
+                "supportedDataTypes": [
+                    "float4"
                 ],
                 "defaultValue": {
                     "$type": "Vector4",
@@ -76,7 +86,7 @@
                         0.0,
                         0.0,
                         0.0,
-                        0.0
+                        1.0
                     ]
                 },
                 "settings": {
@@ -92,20 +102,11 @@
                 "displayName": "Value",
                 "description": "Value",
                 "supportedDataTypes": [
-                    "float4"
+                    "float4x4"
                 ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = clamp(NODEID_inValue, NODEID_inMin, NODEID_inMax);"
+                        "SLOTTYPE NODEID_SLOTNAME = float4x4(NODEID_inRow1, NODEID_inRow2, NODEID_inRow3, NODEID_inRow4);"
                     ]
                 }
             }
