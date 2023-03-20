@@ -5,7 +5,3 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-add_subdirectory(AtomToolsFramework)
-add_subdirectory(MaterialEditor)
-add_subdirectory(ShaderManagementConsole)
