@@ -6,5 +6,5 @@
  *
  */
 
-#define AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME     "passes/LowEndRenderPipeline.azasset"
-#define AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_EXIT_ON_WINDOW_CLOSE 0
+#define GLAD_VULKAN_IMPLEMENTATION
+#include <vulkan/vulkan.h>
