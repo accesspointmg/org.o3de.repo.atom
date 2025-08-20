@@ -12,8 +12,9 @@
 #include <Atom/RPI/VertexBufferOperations.azsli>
 #include <Atom/RPI/IndexBufferOperations.azsli>
 
-// Check if the size of the bindless buffer is big enough for the offset we try to read
-// This is disabled by default, since it has a performance overhead
+// Check if the size of the bindless buffer is big enough for the offset we try to read, since this can lead to GPU crashes 
+// with vulkan, which are very hard to debug.
+// disabled by default, since it has a performance overhead
 #ifndef DEFENSIVE_BINDLESS_ACCESS
 #define DEFENSIVE_BINDLESS_ACCESS 0
 #endif

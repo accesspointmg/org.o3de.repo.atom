@@ -10,8 +10,8 @@
 #pragma once 
 
 #include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
+
 // material info structured buffer
-// TODO: turn this into something similar to the StandardPBR - Parameters
 struct MaterialInfo
 {
     float4 m_baseColor;

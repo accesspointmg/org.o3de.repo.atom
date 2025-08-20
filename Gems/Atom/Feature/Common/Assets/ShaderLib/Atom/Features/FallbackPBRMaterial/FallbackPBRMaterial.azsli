@@ -8,12 +8,26 @@
 
 #pragma once
 
+// See also FallbackPBRMaterial.h
+// 'MaterialInfo' contains a set of PBR material parameters with one entry for each mesh in a scene, regardless of the actually assigned material of that mesh.
+// 'FallbackPBR' is a material implementation that builds on the MaterialInfo and provides functions to create a 'Standard' - surface, which can be used with the 'ApplyDirectLighting()' function in 'StandardLighting.azsli'  
+// The parameters are estimated from the existing material-types (StandardPBR, EnhancedPBR, etc) using some heuristics, but that may fail with more custom materials.
+// 
+// This exists for two reasons:
+// - Access to all material parameters from a single draw-call:
+//     Compute Passes, Fullscreen Triangle passes and Raytracing Hit Shaders sometimes need access to the materials of any mesh in the scene, but only use one draw call (or one hit shader). 
+//     This would mean a single shader needs to support multiple material types at once, which is generally not possible. Instead they can access the FallbackPBR material parametes, which are 
+//     less detailled but still useful in many cases, e.g. GI solutions usually don't need the exact material parameters to produce reasonable results.
+// - backwards - compatability with existing raytracing implementations: 
+//     The MaterialInfo was previously part of the RayTracingFeatureProcessor and the only method to provide material info to the Hit-Shader of the Raytracing Pass.
+//     Note that the existing Raytracing - implementations don't use the FallbackPBR - material functions but build only on the MaterialInfo struct.
+
 // This file defines most functions such that the Material behaves similar to the current PBR materials, but the
-// function parameters are not compatible.
-// - it defines EvaluateVertexGeometry()
-// - EvaluatePixelGeometry() doesn't exist: the functionality is folded into EvaluateSurface
-// - it defines the Surface struct
-// - it defines the LightingData struct
+// function parameters are not fully compatible.
+// - it defines VsInput, VsOutput, PixelGeometryData, Surface and LightingData (see 'FallbackPBRMaterlal_Defines.azsli')
+// - it defines EvaluateVertexGeometry() and EvaluatePixelGeometry() and EvaluateSurface()
+// - it defines LightType - Util classes, the GetDiffuseLighting() and GetSpecularLighting() functions, and InitializeLightingData / FinalizeLightingData
+//   so it's compatible with the EvaluateLighting of the Forward - Pass
 
 #ifndef EvaluateVertexGeometry
 #define EvaluateVertexGeometry EvaluateVertexGeometry_FallbackPBR

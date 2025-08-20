@@ -13,7 +13,8 @@ void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes
 {
 
     MeshInfo meshInfo;
-    if (GetMeshInfoEntry(InstanceID(), meshInfo)) {
+    if (GetMeshInfoEntry(InstanceID(), meshInfo)) 
+    {
         VsInput vertex = GetHitInterpolatedVertexData(meshInfo, PrimitiveIndex(), attrib.barycentrics);
 
         ScreenSpaceClosestHitImpl(payload, vertex, WorldToObject3x4());

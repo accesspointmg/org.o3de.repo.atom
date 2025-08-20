@@ -58,12 +58,14 @@ namespace AZ::Render
         };
     } // namespace GPU
 
+    // Disabling this will disable all update - functions of the FallbackPBR::MaterialManager, and SceneSrg::m_fallbackPBRMaterial will
+    // be a buffer with a single empty entry. This does not modify the shaders though, so be careful about accessing the SceneSrg.
     AZ_CVAR(
         bool,
         r_fallbackPBRMaterialEnabled,
         true,
         nullptr,
-        AZ::ConsoleFunctorFlags::Null,
+        AZ::ConsoleFunctorFlags::NeedsReload,
         "Enable creation of Fallback PBR material entries for each mesh.");
 
     class MaterialConversionUtil
@@ -175,11 +177,16 @@ namespace AZ::Render
 
         void MaterialManager::Activate(RPI::Scene* scene)
         {
-            UpdateFallbackPBRMaterialBuffer();
-
             if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
             {
                 console->GetCvarValue("r_fallbackPBRMaterialEnabled", m_isEnabled);
+            }
+
+            UpdateFallbackPBRMaterialBuffer();
+
+            if (m_isEnabled == false)
+            {
+                return;
             }
 
             // We need to register the buffer in the SceneSrg even if we are disabled
@@ -433,7 +440,7 @@ namespace AZ::Render
         void MaterialManager::UpdateReflectionProbes(
             const TransformServiceFeatureProcessorInterface::ObjectId& objectId, const Aabb& aabbWS)
         {
-            if (!m_rpfp)
+            if (!m_isEnabled || !m_rpfp)
             {
                 return;
             }
