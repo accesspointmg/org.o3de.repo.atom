@@ -14,12 +14,16 @@
 
 namespace AZ::Render
 {
-    // make sure we use the same MeshInfo - struct as the shaders
-#define uint unsigned int
-#define uint2 AZStd::array<uint, 2>
-#include <Atom/Features/MeshInfo/MeshInfo.azsli>
-#undef uint
-#undef uint2
+    namespace GPU
+    {
+
+        // make sure we use the same MeshInfo - struct as the shaders
+        using uint = uint32_t;
+        using uint2 = AZStd::array<uint, 2>;
+#include "Atom/Features/MeshInfo/MeshInfo.azsli"
+        static_assert(sizeof(MeshInfo) % 16 == 0, "GPU struct MeshInfo does not align to 16 bytes");
+    } // namespace GPU
+
 } // namespace AZ::Render
 
 namespace AZ::Render
@@ -34,9 +38,9 @@ namespace AZ::Render
         "Enable creation of meshInfo entries for each mesh. Required for raytracing and deferred rendering.");
 
     // write the (multidevice) ReadIndices into a (single-device) meshInfo - entry
-    MeshInfo ConvertToGpuMeshInfo(const MeshInfoEntry* entry, const int deviceIndex)
+    GPU::MeshInfo ConvertToGpuMeshInfo(const MeshInfoEntry* entry, const int deviceIndex)
     {
-        MeshInfo out{};
+        GPU::MeshInfo out{};
 
         auto FindSemanticInputBuffer = [&](const char* name, const size_t bufferIndex = 0) -> const BufferViewIndexAndOffset*
         {
@@ -114,14 +118,14 @@ namespace AZ::Render
         out.m_flags = 0;
         if (entry->m_isSkinnedMesh)
         {
-            out.m_flags |= MeshInfoFlags::SkinnedMesh;
+            out.m_flags |= GPU::MeshInfoFlags::SkinnedMesh;
         }
 
         return out;
     }
 
     MeshInfoManager::MeshInfoManager()
-        : m_meshInfoBuffer{ "MeshInfo", RPI::CommonBufferPoolType::ReadOnly, static_cast<uint32_t>(sizeof(MeshInfo)) }
+        : m_meshInfoBuffer{ "MeshInfo", RPI::CommonBufferPoolType::ReadOnly, static_cast<uint32_t>(sizeof(GPU::MeshInfo)) }
     {
     }
 
@@ -173,8 +177,6 @@ namespace AZ::Render
             m_meshInfoData[meshInfoindex] = aznew MeshInfoEntry;
         }
 
-        AZ_Printf("MeshInfoManager", "AcquireMeshInfoEntry index = %d, size = %llu\n", handle.GetIndex(), m_meshInfoData.size());
-
         m_meshInfoNeedsUpdate = true;
 
         // Notify other components that we allocated a new entry MeshInfoIndex
@@ -194,15 +196,13 @@ namespace AZ::Render
         {
             AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
             m_meshInfoIndices.Release(handle.GetIndex());
+            AZ_Assert(m_meshInfoData.size() > handle.GetIndex(), "ReleaseMeshInfoEntry() called with invalid index");
             if (m_meshInfoData.size() > handle.GetIndex())
             {
                 // mark the entry as invalid
                 m_meshInfoData[handle.GetIndex()] = nullptr;
             }
         }
-
-        AZ_Printf("MeshInfoManager", "ReleaseMeshInfoEntry index = %d, size = %llu\n", handle.GetIndex(), m_meshInfoData.size());
-
         m_meshInfoNeedsUpdate = true;
     }
 
@@ -221,6 +221,10 @@ namespace AZ::Render
                 // make a copy of the smart pointer to make sure the entry isn't deleted during the update function
                 entry = m_meshInfoData[handle.GetIndex()];
             }
+            else
+            {
+                AZ_Assert(false, "UpdateMeshInfoEntry() called with invalid index");
+            }
         }
         if (entry)
         {
@@ -232,10 +236,10 @@ namespace AZ::Render
     {
         if (m_meshInfoNeedsUpdate)
         {
-            AZStd::unordered_map<int, AZStd::vector<MeshInfo>> multiDeviceMeshInfo;
+            AZStd::unordered_map<int, AZStd::vector<GPU::MeshInfo>> multiDeviceMeshInfo;
             AZStd::unordered_map<int, const void*> updateDataHelper;
 
-            const MeshInfo invalidMeshInfo{ -1 };
+            const GPU::MeshInfo invalidMeshInfo{ -1 };
 
             const auto deviceCount{ AZ::RHI::RHISystemInterface::Get()->GetDeviceCount() };
             // Initialize at least one entry for each device so we don't have dangling buffers
@@ -261,7 +265,7 @@ namespace AZ::Render
                 }
             }
 
-            m_meshInfoBuffer.AdvanceCurrentBufferAndUpdateData(updateDataHelper, numEntries * sizeof(MeshInfo));
+            m_meshInfoBuffer.AdvanceCurrentBufferAndUpdateData(updateDataHelper, numEntries * sizeof(GPU::MeshInfo));
             m_meshInfoNeedsUpdate = false;
         }
     }
@@ -275,7 +279,7 @@ namespace AZ::Render
 
         RHI::Ptr<MeshInfoEntry> entry{ nullptr };
         {
-            // we need to lock here, because someone could nodify the array between checking and fetching the entry
+            // we need to lock here, because someone could modify the array between checking and fetching the entry
             AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
             if (m_meshInfoData.size() > handle.GetIndex())
             {
@@ -382,7 +386,7 @@ namespace AZ::Render
         {
             // For each semantic buffer view entry we store:
             // - a reference to the original StreamBufferView
-            // - A new, 'raw' BufferView for the entire geometry-buffer (TODO: we could deduplicate this)
+            // - A new, 'raw' BufferView for the entire geometry-buffer (Note: we could deduplicate this)
             // - The bindless read-index of this new BufferView
             // - The start-offset inside the new BufferView
             const auto semantic = inputContract.m_streamChannels[streamIndex].m_semantic;

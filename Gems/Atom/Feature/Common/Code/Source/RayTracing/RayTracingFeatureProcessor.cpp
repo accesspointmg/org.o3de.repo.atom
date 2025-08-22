@@ -551,6 +551,13 @@ namespace AZ
 
                 for (auto& subMesh : m_subMeshes)
                 {
+                    bool isTransparent = false;
+                    auto material = m_meshFeatureProcessor->GetFallbackPBRMaterialEntry(subMesh.m_meshInfoHandle);
+                    if (material)
+                    {
+                        isTransparent = material->m_materialParameters.m_irradianceColor.GetA() < 1.0f;
+                    }
+
                     RHI::MultiDeviceObject::IterateDevices(
                         m_deviceMask,
                         [&](int deviceIndex)
@@ -584,7 +591,7 @@ namespace AZ
                                 tlasInstance.m_blas = blas->GetDeviceRayTracingBlas(deviceIndex);
                                 tlasInstance.m_transform = subMesh.m_mesh->m_transform;
                                 tlasInstance.m_nonUniformScale = subMesh.m_mesh->m_nonUniformScale;
-                                // TODO: tlasInstance.m_transparent = subMesh.m_material.m_irradianceColor.GetA() < 1.0f;
+                                tlasInstance.m_transparent = isTransparent;
                                 maxInstanceId = AZStd::max(maxInstanceId, subMesh.m_meshInfoHandle.GetIndex());
                             }
                             return true;

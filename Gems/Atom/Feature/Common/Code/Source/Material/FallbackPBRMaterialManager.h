@@ -33,6 +33,14 @@ namespace AZ::Render
             void Deactivate();
             void Update();
 
+            // integration with the MeshFeatureProcessor
+            const RHI::Ptr<MaterialEntry> GetFallbackPBRMaterialEntry(const MeshInfoHandle handle);
+            void UpdateFallbackPBRMaterialEntry(const MeshInfoHandle handle, AZStd::function<bool(MaterialEntry*)> updateFunction);
+            const Data::Instance<RPI::Buffer>& GetFallbackPBRMaterialBuffer() const;
+
+            void UpdateReflectionProbes(const TransformServiceFeatureProcessorInterface::ObjectId& objectId, const Aabb& aabbWS);
+
+        protected:
             // --------------------------------------------------------------------------------------
             // MeshInfoNotificationBus::Handler overrides
             void OnAcquireMeshInfoEntry(const MeshInfoHandle meshInfoHandle) override;
@@ -43,13 +51,6 @@ namespace AZ::Render
                 const size_t lodIndex,
                 const size_t lodMeshIndex) override;
             // --------------------------------------------------------------------------------------
-
-            // integration with the MeshFeatureProcessor
-            const RHI::Ptr<MaterialEntry> GetFallbackPBRMaterialEntry(const MeshInfoHandle handle);
-            void UpdateFallbackPBRMaterialEntry(const MeshInfoHandle handle, AZStd::function<bool(MaterialEntry*)> updateFunction);
-            const Data::Instance<RPI::Buffer>& GetFallbackPBRMaterialBuffer() const;
-
-            void UpdateReflectionProbes(const TransformServiceFeatureProcessorInterface::ObjectId& objectId, const Aabb& aabbWS);
 
         private:
             bool m_isEnabled = false;

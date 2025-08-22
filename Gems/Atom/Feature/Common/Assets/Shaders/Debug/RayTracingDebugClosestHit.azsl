@@ -33,7 +33,7 @@ float3 GetUVColor(float2 barycentrics)
 }
 
 #include <Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli>
-float3 GetFallbackPBRAlbedo(float2 barycentrics)
+float3 GetFallbackPBRBaseColor(float2 barycentrics)
 {
     MaterialInfo materialInfo;
     if(!GetMaterialInfoEntry(InstanceID(), materialInfo))
@@ -43,7 +43,7 @@ float3 GetFallbackPBRAlbedo(float2 barycentrics)
     VsInput vertexData = GetVertexData(barycentrics);
 
     TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, RayTracingGlobalSrg::LinearSampler, vertexData.uv0);
-    return textureData.m_baseColor;
+    return textureData.m_baseColor.rgb;
 }
 
 [shader("closesthit")]
@@ -57,7 +57,7 @@ void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes
     case RayTracingDebugViewMode::Barycentrics:   payload.m_color = GetBarycentricColor(attrib.barycentrics); break;
     case RayTracingDebugViewMode::Normals:        payload.m_color = GetNormalColor(attrib.barycentrics);      break;
     case RayTracingDebugViewMode::UVs:            payload.m_color = GetUVColor(attrib.barycentrics);          break;
-    case RayTracingDebugViewMode::FallbackPBRAlbedo:    payload.m_color = GetFallbackPBRAlbedo(attrib.barycentrics); break;
+    case RayTracingDebugViewMode::BaseColor:      payload.m_color = GetFallbackPBRBaseColor(attrib.barycentrics); break;
     default:                                      payload.m_noData = true;                                    break;
     }
 }

@@ -27,7 +27,7 @@ namespace AZ::Render
     //     scene, but only use one draw call (or one hit shader). This would mean a single shader needs to support multiple material types
     //     at once, which is generally not possible. Instead they can access the FallbackPBR material parametes, which are less detailled
     //     but still useful in many cases, e.g. GI solutions usually don't need the exact material parameters to produce reasonable results.
-    // - backwards - compatability with existing raytracing implementations:
+    // - backwards - compatibility with existing raytracing implementations:
     //     This was previously part of the RayTracingFeatureProcessor and the only method to provide material info to the
     //     Hit-Shader of the Raytracing Pass.
     namespace FallbackPBR

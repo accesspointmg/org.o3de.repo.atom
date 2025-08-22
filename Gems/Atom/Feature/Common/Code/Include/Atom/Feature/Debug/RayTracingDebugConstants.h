@@ -22,6 +22,6 @@ namespace AZ::Render
         Barycentrics,
         Normals,
         UVs,
-        FallbackPBRAlbedo
+        BaseColor
     };
 } // namespace AZ::Render

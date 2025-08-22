@@ -126,7 +126,6 @@ Surface EvaluateSurface_FallbackPBR(PixelGeometryData geoData, TextureData textu
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
 #include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
 
-// Then define the Diffuse and Specular lighting functions
 real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
 {
     real3 diffuse = DiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), dirToLight, lightingData.diffuseResponse);

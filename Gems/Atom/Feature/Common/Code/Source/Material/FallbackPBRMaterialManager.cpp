@@ -20,28 +20,31 @@ namespace AZ::Render
 {
     namespace GPU
     {
+        // Note: we can't include FallbackPBRMaterialInfo.azsli or ReflectionProbeData.azsli here, since it contains
+        // hlsl code that won't easily compile in c++
 
-        // reflection probe data, must match the structure in ReflectionProbeData.azsli
-        struct alignas(16) ReflectionProbeData
+        // must match the structure in ReflectionProbeData.azsli
+        using float3 = AZStd::array<float, 3>;
+        using float4 = AZStd::array<float, 4>;
+        using float3x4 = AZStd::array<float, 12>;
+        struct ReflectionProbeData
         {
-            AZStd::array<float, 12> m_modelToWorld; // float3x4
-            AZStd::array<float, 12> m_modelToWorldInverse; // float3x4
-            AZStd::array<float, 3> m_outerObbHalfLengths; // float3
+            float3x4 m_modelToWorld; // float3x4
+            float3x4 m_modelToWorldInverse; // float3x4
+            float3 m_outerObbHalfLengths; // float3
             float m_exposure = 0.0f;
-            AZStd::array<float, 3> m_innerObbHalfLengths; // float3
+            float3 m_innerObbHalfLengths; // float3
             uint32_t m_useReflectionProbe = 0;
             uint32_t m_useParallaxCorrection = 0;
-            AZStd::array<float, 3> m_padding;
+            float3 m_padding;
         };
 
-        // material data, must match the structure in FallbackPBRMaterialInfo.azsli
-        struct alignas(16) MaterialInfo
+        // must match the structure in FallbackPBRMaterialInfo.azsli
+        struct MaterialInfo
         {
-            AZStd::array<float, 4> m_baseColor = { 0, 0, 0, 0 };
-
-            AZStd::array<float, 4> m_irradianceColor = { 0, 0, 0, 0 };
-
-            AZStd::array<float, 3> m_emissiveColor = { 0, 0, 0 };
+            float4 m_baseColor = { 0, 0, 0, 0 };
+            float4 m_irradianceColor = { 0, 0, 0, 0 };
+            float3 m_emissiveColor = { 0, 0, 0 };
             float m_metallicFactor{ 0 };
 
             float m_roughnessFactor{ 0 };
@@ -56,6 +59,9 @@ namespace AZ::Render
 
             ReflectionProbeData m_reflectionProbeData;
         };
+
+        static_assert(sizeof(ReflectionProbeData) % 16 == 0, "GPU struct ReflectionProbeData does not align to 16 bytes");
+        static_assert(sizeof(MaterialInfo) % 16 == 0, "GPU struct MaterialInfo does not align to 16 bytes");
     } // namespace GPU
 
     // Disabling this will disable all update - functions of the FallbackPBR::MaterialManager, and SceneSrg::m_fallbackPBRMaterial will
@@ -351,6 +357,7 @@ namespace AZ::Render
             }
             if (m_materialData.size() <= meshInfoHandle.GetIndex())
             {
+                AZ_Assert(m_materialData.size() > meshInfoHandle.GetIndex(), "OnPopulateMeshInfoEntry() called with invalid index");
                 return;
             }
             RHI::Ptr<MaterialEntry> entry;
@@ -381,6 +388,7 @@ namespace AZ::Render
             AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
             if (m_materialData.size() <= meshInfoHandle.GetIndex())
             {
+                AZ_Assert(m_materialData.size() > meshInfoHandle.GetIndex(), "OnReleaseMeshInfoEntry() called with invalid index");
                 return;
             }
             auto objectId = m_materialData[meshInfoHandle.GetIndex()]->m_objectId;
@@ -431,9 +439,22 @@ namespace AZ::Render
             {
                 return;
             }
-            if (m_materialData.size() > handle.GetIndex() && m_materialData[handle.GetIndex()] != nullptr)
+            RHI::Ptr<MaterialEntry> entry;
             {
-                m_bufferNeedsUpdate = updateFunction(m_materialData[handle.GetIndex()].get());
+                AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
+                if (m_materialData.size() > handle.GetIndex() && m_materialData[handle.GetIndex()] != nullptr)
+                {
+                    // make a copy of the smart pointer to make sure the entry isn't deleted during the update function
+                    entry = m_materialData[handle.GetIndex()];
+                }
+                else
+                {
+                    AZ_Assert(false, "UpdateFallbackPBRMaterialEntry() called with invalid index");
+                }
+            }
+            if (entry)
+            {
+                m_bufferNeedsUpdate = updateFunction(entry.get());
             }
         }
 

@@ -38,7 +38,7 @@ namespace AZ::Render
         AZStd::unordered_map<int, uint32_t> m_bindlessReadIndex = {};
 
         // utility function to create an entry from a generic RHI buffer
-        static BufferViewIndexAndOffset Create(RHI::Buffer* rhiBuffer, const uint32_t byteOffset)
+        static BufferViewIndexAndOffset Create(RHI::Buffer* rhiBuffer, const uint32_t byteOffset, const RHI::VertexFormat vertexFormat)
         {
             BufferViewIndexAndOffset result;
             uint32_t byteCount = static_cast<uint32_t>(rhiBuffer->GetDescriptor().m_byteCount);
@@ -49,6 +49,7 @@ namespace AZ::Render
                 result.m_bufferView = rhiBuffer->GetBufferView(desc);
                 result.m_bindlessReadIndex = result.m_bufferView->GetBindlessReadIndex();
                 result.m_byteOffset = byteOffset;
+                result.m_vertexFormat = vertexFormat;
             }
             return result;
         };
@@ -56,8 +57,7 @@ namespace AZ::Render
         static BufferViewIndexAndOffset Create(RHI::StreamBufferView& streamBufferView, const RHI::VertexFormat vertexFormat)
         {
             auto rhiBuffer = const_cast<RHI::Buffer*>(streamBufferView.GetBuffer());
-            auto result = BufferViewIndexAndOffset::Create(rhiBuffer, streamBufferView.GetByteOffset());
-            result.m_vertexFormat = vertexFormat;
+            auto result = BufferViewIndexAndOffset::Create(rhiBuffer, streamBufferView.GetByteOffset(), vertexFormat);
             result.m_streamBufferView = streamBufferView;
             return result;
         }
