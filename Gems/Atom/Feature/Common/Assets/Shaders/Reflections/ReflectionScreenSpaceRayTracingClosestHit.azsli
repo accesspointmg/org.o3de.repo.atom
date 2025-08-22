@@ -52,7 +52,7 @@ void ScreenSpaceClosestHitImpl(inout PayloadData payload, VsInput vertexData, fl
     hitCoords.xy = (hitCoords.xy * 0.5f + 0.5f) * dimensions;
 
     // retrieve Material data for the hit
-    MaterialInfo materialInfo = SceneSrg::m_fallbackPBRMaterial[NonUniformResourceIndex(InstanceIndex())];
+    MaterialInfo materialInfo = SceneSrg::m_fallbackPBRMaterial[NonUniformResourceIndex(InstanceID())];
     TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, RayTracingSceneSrg::LinearSampler, vertexData.uv0);      
     
     float3 vertexNormalWS = normalize(mul(worldInvTranspose, float4(vertexData.normal, 0)).xyz);
