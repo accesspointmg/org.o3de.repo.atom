@@ -38,7 +38,38 @@ namespace AZ::Render
         AZStd::unordered_map<int, uint32_t> m_bindlessReadIndex = {};
 
         // utility function to create an entry from a generic RHI buffer
-        static BufferViewIndexAndOffset Create(RHI::Buffer* rhiBuffer, const uint32_t byteOffset, const RHI::VertexFormat vertexFormat)
+        static BufferViewIndexAndOffset Create(
+            RHI::Buffer* rhiBuffer, const uint32_t byteOffset, RHI::VertexFormat vertexFormat, bool createStreamBufferView)
+        {
+            auto result = CreateInternal(rhiBuffer, byteOffset, vertexFormat);
+            if (createStreamBufferView)
+            {
+                auto desc = result.m_bufferView->GetDescriptor();
+                uint32_t elementSize = desc.m_elementSize;
+                if (desc.m_elementFormat != RHI::Format::Unknown)
+                {
+                    elementSize = GetFormatSize(desc.m_elementFormat);
+                }
+                result.m_streamBufferView = RHI::StreamBufferView(
+                    *result.m_bufferView->GetBuffer(),
+                    desc.m_elementOffset * elementSize,
+                    desc.m_elementCount * elementSize,
+                    RHI::GetVertexFormatSize(vertexFormat));
+            }
+            return result;
+        }
+
+        // utility function to create an entry from a Streambuffer
+        static BufferViewIndexAndOffset Create(RHI::StreamBufferView& streamBufferView, const RHI::VertexFormat vertexFormat)
+        {
+            auto rhiBuffer = const_cast<RHI::Buffer*>(streamBufferView.GetBuffer());
+            auto result = BufferViewIndexAndOffset::CreateInternal(rhiBuffer, streamBufferView.GetByteOffset(), vertexFormat);
+            result.m_streamBufferView = streamBufferView;
+            return result;
+        }
+
+    private:
+        static BufferViewIndexAndOffset CreateInternal(RHI::Buffer* rhiBuffer, const uint32_t byteOffset, RHI::VertexFormat vertexFormat)
         {
             BufferViewIndexAndOffset result;
             uint32_t byteCount = static_cast<uint32_t>(rhiBuffer->GetDescriptor().m_byteCount);
@@ -51,16 +82,9 @@ namespace AZ::Render
                 result.m_byteOffset = byteOffset;
                 result.m_vertexFormat = vertexFormat;
             }
+            result.m_vertexFormat = vertexFormat;
             return result;
         };
-        // utility function to create an entry from a Streambuffer
-        static BufferViewIndexAndOffset Create(RHI::StreamBufferView& streamBufferView, const RHI::VertexFormat vertexFormat)
-        {
-            auto rhiBuffer = const_cast<RHI::Buffer*>(streamBufferView.GetBuffer());
-            auto result = BufferViewIndexAndOffset::Create(rhiBuffer, streamBufferView.GetByteOffset(), vertexFormat);
-            result.m_streamBufferView = streamBufferView;
-            return result;
-        }
     };
 
     // Utility to access the Indices for the Geometry - Data from a mesh without the input-assembly

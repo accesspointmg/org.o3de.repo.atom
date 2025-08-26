@@ -394,9 +394,13 @@ namespace AZ
                     RHI::RayTracingBlasDescriptor& blasDescriptor = subMeshBlasInstance.m_blasDescriptor;
                     blasDescriptor.m_buildFlags = buildFlags;
 
+                    AZ_Assert(
+                        positionIt->second.m_streamBufferView.GetByteCount() > 0,
+                        "The \"POSITION\" semantic of MeshInfo needs to have a valid StreamBufferView");
+
                     RHI::RayTracingGeometry& blasGeometry = blasDescriptor.m_geometries.emplace_back();
                     blasGeometry.m_vertexFormat = position.m_vertexFormat;
-                    blasGeometry.m_vertexBuffer = position.m_streamBufferView;
+                    blasGeometry.m_vertexBuffer = positionIt->second.m_streamBufferView;
                     blasGeometry.m_indexBuffer = indexBuffer.m_indexBufferView;
 
                     itMeshBlasInstance->second.m_subMeshes.push_back(subMeshBlasInstance);
