@@ -125,7 +125,7 @@ namespace AZ
             void QueueInit(const Data::Instance<RPI::Model>& model);
             void Init(MeshFeatureProcessor* meshFeatureProcessor);
             void UpdateMeshInfo(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex);
-            void RemoveMeshInfo(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex);
+            void RemoveMeshInfo(MeshFeatureProcessor* meshFeatureProcessor);
             void BuildDrawPacketList(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex);
             void SetRayTracingData(MeshFeatureProcessor* meshFeatureProcessor);
             void RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);

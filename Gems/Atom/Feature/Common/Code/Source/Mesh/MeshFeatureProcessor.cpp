@@ -1967,13 +1967,7 @@ namespace AZ
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
             RemoveRayTracingData(rayTracingFeatureProcessor);
-
-            const size_t modelLodCount = m_model->GetLodCount();
-            for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
-            {
-                RemoveMeshInfo(meshFeatureProcessor, modelLodIndex);
-            }
-
+            RemoveMeshInfo(meshFeatureProcessor);
 
             // We're intentionally using the MeshFeatureProcessor's value instead of using the cvar directly here,
             // because DeInit might be called after the cvar changes, but we want to do the de-initialization based
@@ -2211,32 +2205,35 @@ namespace AZ
             }
         }
 
-        void ModelDataInstance::RemoveMeshInfo(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex)
+        void ModelDataInstance::RemoveMeshInfo(MeshFeatureProcessor* meshFeatureProcessor)
         {
-            if (m_meshInfoIndicesByLod.size() <= modelLodIndex)
+            if (m_model == nullptr || m_meshInfoIndicesByLod.empty())
             {
-                // we don't have any meshInfo-entries yet
                 return;
             }
-            auto& meshInfoIndices = m_meshInfoIndicesByLod[modelLodIndex];
-
             // clear all meshInfo-entries
             MeshInfoManager& meshInfoManager = meshFeatureProcessor->GetMeshInfoManager();
-            for (size_t meshIndex = 0; meshIndex < meshInfoIndices.size(); ++meshIndex)
-            {
-                if (meshInfoIndices[meshIndex].IsValid())
-                {
-                    meshInfoManager.ReleaseMeshInfoEntry(meshInfoIndices[meshIndex]);
-                    meshInfoIndices[meshIndex] = MeshInfoHandle{};
-                }
-            }
 
-            // Remove meshInfo - entries in case the model has fewer meshes now
-            RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
-            const auto meshCount = modelLod.GetMeshes().size();
-            if (meshInfoIndices.size() > meshCount)
+            const size_t modelLodCount = m_model->GetLodCount();
+            for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
             {
-                meshInfoIndices.resize(meshCount, MeshInfoHandle{});
+                auto& meshInfoIndices = m_meshInfoIndicesByLod[modelLodIndex];
+
+                for (size_t meshIndex = 0; meshIndex < meshInfoIndices.size(); ++meshIndex)
+                {
+                    if (meshInfoIndices[meshIndex].IsValid())
+                    {
+                        meshInfoManager.ReleaseMeshInfoEntry(meshInfoIndices[meshIndex]);
+                        meshInfoIndices[meshIndex] = MeshInfoHandle{};
+                    }
+                }
+                // Remove meshInfo - entries in case the model has fewer meshes now
+                RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
+                const auto meshCount = modelLod.GetMeshes().size();
+                if (meshInfoIndices.size() > meshCount)
+                {
+                    meshInfoIndices.resize(meshCount, MeshInfoHandle{});
+                }
             }
         }
 
