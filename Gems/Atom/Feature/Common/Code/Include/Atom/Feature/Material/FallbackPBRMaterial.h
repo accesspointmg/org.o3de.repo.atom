@@ -52,14 +52,33 @@ namespace AZ::Render
             RHI::Ptr<const RHI::ImageView> m_emissiveImageView;
         };
 
-        // One entry for each mesh in the scene. These use the same indices as the MeshInfo - Array
+        // The FallbackPBRMaterialManager listens to the MeshInfoNotificationBus and keeps the MaterialInfo - entries in sync
+        // with the MeshInfo entries.
+        // If you manage your meshes and materials outside of the MeshFeatureProcessor:
+        // auto meshInfoHandle = meshFeatureProcessor->AcquireMeshInfoHandle(); // This will be propagated to the FallbackPBRMaterialManager
+        // meshFeatureProcessor->UpdateMeshInfoEntry(meshInfoHandle, [](MeshInfoEntry* entry)
+        // {
+        //     register your geometry buffers here if needed
+        //     return true; /* indicate we changed something */
+        // });
+        // meshFeatureProcessor->UpdateFallbackPBRMaterialEntry(meshInfoHandle, [](FallbackPBR::MaterialEntry* entry)
+        // {
+        //     fill your Material-Entry here
+        //     return true; /* indicate we changed something */
+        // });
         struct MaterialEntry : public AZStd::intrusive_base
         {
+            // used only for the reflection probe data: can be empty.
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+            // can be empty; if provided, the change-id is checked every frame and the MaterialParameters are updated
             Data::Instance<RPI::Material> m_material;
             RPI::Material::ChangeId m_materialChangeId;
+            // This will be converted to the MaterialInfo struct and uploaded to the GPU
             MaterialParameters m_materialParameters;
         };
+
+        void ConvertMaterial(RPI::Material* material, MaterialParameters& convertedMaterial);
+
     } // namespace FallbackPBR
 
 } // namespace AZ::Render

@@ -70,11 +70,15 @@ namespace AZ
                 const AZStd::unordered_map<int, uint32_t>& bindlessBufferIndices = {}) override;
             void SetProceduralGeometryTypeBindlessBufferIndex(
                 ProceduralGeometryTypeWeakHandle geometryTypeHandle, const AZStd::unordered_map<int, uint32_t>& bindlessBufferIndices) override;
+            MeshInfoHandle CreateMeshInfoForProceduralGeometry() override;
+            void SetMaterialParametersForProceduralGeometry(
+                const MeshInfoHandle& meshInfoHandle, FallbackPBR::MaterialParameters& material) override;
+            void SetMaterialForProceduralGeometry(const MeshInfoHandle& meshInfoHandle, Data::Instance<RPI::Material> material) override;
             void AddProceduralGeometry(
                 ProceduralGeometryTypeWeakHandle geometryTypeHandle,
                 const Uuid& uuid,
                 const Aabb& aabb,
-                const FallbackPBR::MaterialParameters& material,
+                const MeshInfoHandle& meshInfoHandle,
                 RHI::RayTracingAccelerationStructureInstanceInclusionMask instanceMask,
                 uint32_t localInstanceIndex) override;
             void SetProceduralGeometryTransform(

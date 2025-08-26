@@ -58,8 +58,6 @@ namespace AZ::Render
             void UpdateFallbackPBRMaterial();
             void UpdateFallbackPBRMaterialBuffer();
 
-            void ConvertMaterial(RPI::Material* material, MaterialParameters& convertedMaterial);
-
             // reflection probe
             struct ReflectionProbe
             {

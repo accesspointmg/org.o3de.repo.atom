@@ -162,6 +162,25 @@ namespace AZ::Render
         virtual void SetProceduralGeometryTypeBindlessBufferIndex(
             ProceduralGeometryTypeWeakHandle geometryTypeHandle, const AZStd::unordered_map<int, uint32_t>& bindlessBufferIndices) = 0;
 
+        //! Creates a mostly empty MeshInfo-Entry suitable for a Procedural Geometry hit shader. This is a convenience wrapper arround
+        //! a call to MeshFeatureProcessor->AcquireMeshInfoEntry(), which allocates both, a MeshInfo - entry and a FallbackPBRMaterial -
+        //! entry.
+        //! \return MeshInfoHandle the handle (index) of the newly created meshInfo-Entry.
+        virtual MeshInfoHandle CreateMeshInfoForProceduralGeometry() = 0;
+
+        //! Sets the FallbackPBR material parameters for a procedural geometry entry. This is a convenience wrapper arround
+        //! MeshFeatureProcessor->UpdateFallbackPBRMaterialEntry().
+        //! \param meshInfoHandle The meshInfo - handle for the procedural geometry entry.
+        //! \param material The fallbackPBR - material parameters.
+        virtual void SetMaterialParametersForProceduralGeometry(
+            const MeshInfoHandle& meshInfoHandle, FallbackPBR::MaterialParameters& material) = 0;
+
+        //! Converts the material into FallbackPBR material parameters, and sets them for a procedural geometry entry. This is a convenience
+        //! wrapper arround MeshFeatureProcessor->UpdateFallbackPBRMaterialEntry().
+        //! \param meshInfoHandle The meshInfo - handle for the procedural geometry entry.
+        //! \param material The material for the procedural geometry.
+        virtual void SetMaterialForProceduralGeometry(const MeshInfoHandle& meshInfoHandle, Data::Instance<RPI::Material> material) = 0;
+
         //! Adds a procedural geometry to the ray tracing scene.
         //! \param geometryTypeHandle A weak handle of a procedural geometry type (obtained by calling `.GetWeakHandle()` on the handle
         //! returned by `RegisterProceduralGeometryType`.
@@ -175,7 +194,7 @@ namespace AZ::Render
             ProceduralGeometryTypeWeakHandle geometryTypeHandle,
             const Uuid& uuid,
             const Aabb& aabb,
-            const FallbackPBR::MaterialParameters& material,
+            const MeshInfoHandle& meshInfoHandle,
             RHI::RayTracingAccelerationStructureInstanceInclusionMask instanceMask,
             uint32_t localInstanceIndex) = 0;
 

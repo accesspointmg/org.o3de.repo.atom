@@ -118,6 +118,7 @@ set(FILES
     Source/Material/Transform2DFunctor.h
     Source/Material/UseTextureFunctor.cpp
     Source/Material/UseTextureFunctor.h
+    Source/Material/FallbackPBRMaterial.cpp
     Source/Material/FallbackPBRMaterialManager.cpp
     Source/Material/FallbackPBRMaterialManager.h
     Source/Math/GaussianMathFilter.h

@@ -132,11 +132,55 @@ namespace AZ
             m_proceduralGeometryInfoBufferNeedsUpdate = true;
         }
 
+        MeshInfoHandle RayTracingFeatureProcessor::CreateMeshInfoForProceduralGeometry()
+        {
+            auto meshInfoHandle = m_meshFeatureProcessor->AcquireMeshInfoEntry();
+            // Update the meshinfo-entry for the procedural mesh
+            m_meshFeatureProcessor->UpdateMeshInfoEntry(
+                meshInfoHandle,
+                [](MeshInfoEntry* entry)
+                {
+                    // enable all lighting channels for the procedural mesh.
+                    entry->m_lightingChannels = AZStd::numeric_limits<uint32_t>::max();
+                    return true;
+                });
+            return meshInfoHandle;
+        }
+
+        void RayTracingFeatureProcessor::SetMaterialParametersForProceduralGeometry(
+            const MeshInfoHandle& meshInfoHandle, FallbackPBR::MaterialParameters& material)
+        {
+            // create a FallbackPBR material entry for the empty meshInfo entry
+            m_meshFeatureProcessor->UpdateFallbackPBRMaterialEntry(
+                meshInfoHandle,
+                [&material](FallbackPBR::MaterialEntry* entry)
+                {
+                    entry->m_materialParameters = material;
+                    return true;
+                });
+        }
+
+        void RayTracingFeatureProcessor::SetMaterialForProceduralGeometry(
+            const MeshInfoHandle& meshInfoHandle, Data::Instance<RPI::Material> material)
+        {
+            // create a FallbackPBR material entry for the empty meshInfo entry
+
+            m_meshFeatureProcessor->UpdateFallbackPBRMaterialEntry(
+                meshInfoHandle,
+                [&material](FallbackPBR::MaterialEntry* entry)
+                {
+                    entry->m_material = material;
+                    FallbackPBR::ConvertMaterial(entry->m_material.get(), entry->m_materialParameters);
+                    entry->m_materialChangeId = material->GetCurrentChangeId();
+                    return true;
+                });
+        }
+
         void RayTracingFeatureProcessor::AddProceduralGeometry(
             ProceduralGeometryTypeWeakHandle geometryTypeHandle,
             const Uuid& uuid,
             const Aabb& aabb,
-            const FallbackPBR::MaterialParameters& material,
+            const MeshInfoHandle& meshInfoHandle,
             RHI::RayTracingAccelerationStructureInstanceInclusionMask instanceMask,
             uint32_t localInstanceIndex)
         {
@@ -153,31 +197,12 @@ namespace AZ
             ProceduralGeometry proceduralGeometry;
             proceduralGeometry.m_uuid = uuid;
             // acquire an empty meshInfo - entry
-            proceduralGeometry.m_meshInfoHandle = m_meshFeatureProcessor->AcquireMeshInfoEntry();
+            proceduralGeometry.m_meshInfoHandle = meshInfoHandle;
             proceduralGeometry.m_typeHandle = geometryTypeHandle;
             proceduralGeometry.m_aabb = aabb;
             proceduralGeometry.m_instanceMask = static_cast<uint32_t>(instanceMask);
             proceduralGeometry.m_blas = rayTracingBlas;
             proceduralGeometry.m_localInstanceIndex = localInstanceIndex;
-
-            // Update the meshinfo-entry for the procedural mesh
-            m_meshFeatureProcessor->UpdateMeshInfoEntry(
-                proceduralGeometry.m_meshInfoHandle,
-                [](MeshInfoEntry* entry)
-                {
-                    // enable all lighting channels for the procedural mesh.
-                    entry->m_lightingChannels = AZStd::numeric_limits<uint32_t>::max();
-                    return true;
-                });
-
-            // create a FallbackPBR material entry for the empty meshInfo entry
-            m_meshFeatureProcessor->UpdateFallbackPBRMaterialEntry(
-                proceduralGeometry.m_meshInfoHandle,
-                [&material](FallbackPBR::MaterialEntry* entry)
-                {
-                    entry->m_materialParameters = material;
-                    return true;
-                });
 
             MeshBlasInstance meshBlasInstance;
             meshBlasInstance.m_count = 1;
@@ -613,7 +638,7 @@ namespace AZ
                         [&](int deviceIndex)
                         {
                             RHI::DeviceRayTracingTlasInstance& tlasInstance = tlasDescriptor[deviceIndex].m_instances.emplace_back();
-                            tlasInstance.m_instanceID = maxInstanceId++;
+                            tlasInstance.m_instanceID = proceduralGeometry.m_meshInfoHandle.GetIndex();
                             tlasInstance.m_instanceMask = proceduralGeometry.m_instanceMask;
                             tlasInstance.m_hitGroupIndex = geometryTypeMap[proceduralGeometry.m_typeHandle->m_name];
                             tlasInstance.m_blas = proceduralGeometry.m_blas->GetDeviceRayTracingBlas(deviceIndex);
