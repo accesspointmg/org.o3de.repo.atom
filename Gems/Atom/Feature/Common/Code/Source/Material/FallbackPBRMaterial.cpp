@@ -9,6 +9,7 @@
 #include <Atom/Feature/Material/ConvertEmissiveUnitFunctor.h>
 #include <Atom/Feature/Material/FallbackPBRMaterial.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <AzCore/Name/NameDictionary.h>
 
 namespace AZ::Render
 {
