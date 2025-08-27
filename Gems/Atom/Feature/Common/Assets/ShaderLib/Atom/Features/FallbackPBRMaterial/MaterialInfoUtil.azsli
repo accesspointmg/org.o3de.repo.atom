@@ -40,13 +40,13 @@ struct TextureData
     float3 m_emissiveColor;
 };
 
-TextureData GetFallbackPBRMaterialTextureData(MaterialInfo materialInfo, sampler textureSampler, float2 uv)
+TextureData GetFallbackPBRMaterialTextureData(MaterialInfo materialInfo, sampler textureSampler, float2 uv, const float mipLevel = 0)
 {
     TextureData textureData = (TextureData)0;
 
     if (materialInfo.m_baseColorImage >= 0)
     {
-        textureData.m_baseColor = Bindless::GetTexture2D(materialInfo.m_baseColorImage).SampleLevel(textureSampler, uv, 0);
+        textureData.m_baseColor = Bindless::GetTexture2D(materialInfo.m_baseColorImage).SampleLevel(textureSampler, uv, mipLevel);
     }
     else
     {
@@ -58,7 +58,7 @@ TextureData GetFallbackPBRMaterialTextureData(MaterialInfo materialInfo, sampler
 
     if (materialInfo.m_normalImage >= 0)
     {
-        textureData.m_normal = Bindless::GetTexture2D(materialInfo.m_normalImage).SampleLevel(textureSampler, uv, 0).rgb;
+        textureData.m_normal = Bindless::GetTexture2D(materialInfo.m_normalImage).SampleLevel(textureSampler, uv, mipLevel).rgb;
     }
     else
     {
@@ -68,7 +68,7 @@ TextureData GetFallbackPBRMaterialTextureData(MaterialInfo materialInfo, sampler
     // metallic
     if (materialInfo.m_metallicImage >= 0)
     {
-        textureData.m_metallic = Bindless::GetTexture2D(materialInfo.m_metallicImage).SampleLevel(textureSampler, uv, 0).r;
+        textureData.m_metallic = Bindless::GetTexture2D(materialInfo.m_metallicImage).SampleLevel(textureSampler, uv, mipLevel).r;
     }
     else
     {
@@ -78,7 +78,7 @@ TextureData GetFallbackPBRMaterialTextureData(MaterialInfo materialInfo, sampler
     // roughness
     if (materialInfo.m_roughnessImage >= 0)
     {
-        textureData.m_roughness = Bindless::GetTexture2D(materialInfo.m_roughnessImage).SampleLevel(textureSampler, uv, 0).r;
+        textureData.m_roughness = Bindless::GetTexture2D(materialInfo.m_roughnessImage).SampleLevel(textureSampler, uv, mipLevel).r;
     }
     else
     {
@@ -89,7 +89,7 @@ TextureData GetFallbackPBRMaterialTextureData(MaterialInfo materialInfo, sampler
     textureData.m_emissiveColor = materialInfo.m_emissiveColor;
     if (materialInfo.m_emissiveImage >= 0)
     {
-        textureData.m_emissiveColor *= Bindless::GetTexture2D(materialInfo.m_emissiveImage).SampleLevel(textureSampler, uv, 0).rgb;
+        textureData.m_emissiveColor *= Bindless::GetTexture2D(materialInfo.m_emissiveImage).SampleLevel(textureSampler, uv, mipLevel).rgb;
     }
     return textureData;
 }

@@ -14,7 +14,7 @@
 #include <Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli>
 
 
-Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 barycentrics, sampler linearSampler, float4x4 viewProjectionMatrix)
+Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 barycentrics, sampler linearSampler, float4x4 viewProjectionMatrix, const float mipLevel)
 {
     Surface surface = (Surface)0;
 
@@ -35,7 +35,7 @@ Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 
     {
         return surface;
     }
-    TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, linearSampler, geoData.uvs[0]);
+    TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, linearSampler, geoData.uvs[0], mipLevel);
     surface = EvaluateSurface(geoData, textureData, meshInfo.m_lightingChannels);
     return surface;
 }
@@ -45,8 +45,8 @@ Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 
 #endif
 
 #if PIPELINE_HAS_VIEW_SRG
-Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 barycentrics, sampler linearSampler)
+Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 barycentrics, sampler linearSampler, const float mipLevel)
 {
-    return GetFallbackPBRStandardSurface(meshInfoIndex, triangleId, barycentrics, linearSampler, ViewSrg::m_viewProjectionMatrix);
+    return GetFallbackPBRStandardSurface(meshInfoIndex, triangleId, barycentrics, linearSampler, ViewSrg::m_viewProjectionMatrix, mipLevel);
 }
 #endif // PIPELINE_HAS_VIEW_SRG
