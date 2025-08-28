@@ -39,7 +39,7 @@ namespace AZ::Render
 
         // utility function to create an entry from a generic RHI buffer
         static BufferViewIndexAndOffset Create(
-            RHI::Buffer* rhiBuffer, const uint32_t byteOffset, RHI::VertexFormat vertexFormat, bool createStreamBufferView)
+            const RHI::Buffer* rhiBuffer, const uint32_t byteOffset, RHI::VertexFormat vertexFormat, bool createStreamBufferView)
         {
             auto result = CreateInternal(rhiBuffer, byteOffset, vertexFormat);
             if (createStreamBufferView)
@@ -62,14 +62,15 @@ namespace AZ::Render
         // utility function to create an entry from a Streambuffer
         static BufferViewIndexAndOffset Create(RHI::StreamBufferView& streamBufferView, const RHI::VertexFormat vertexFormat)
         {
-            auto rhiBuffer = const_cast<RHI::Buffer*>(streamBufferView.GetBuffer());
+            auto rhiBuffer = streamBufferView.GetBuffer();
             auto result = BufferViewIndexAndOffset::CreateInternal(rhiBuffer, streamBufferView.GetByteOffset(), vertexFormat);
             result.m_streamBufferView = streamBufferView;
             return result;
         }
 
     private:
-        static BufferViewIndexAndOffset CreateInternal(RHI::Buffer* rhiBuffer, const uint32_t byteOffset, RHI::VertexFormat vertexFormat)
+        static BufferViewIndexAndOffset CreateInternal(
+            const RHI::Buffer* rhiBuffer, const uint32_t byteOffset, RHI::VertexFormat vertexFormat)
         {
             BufferViewIndexAndOffset result;
             uint32_t byteCount = static_cast<uint32_t>(rhiBuffer->GetDescriptor().m_byteCount);
@@ -106,7 +107,7 @@ namespace AZ::Render
             // The 'raw' bufferview is for a ByteAddresBuffer, which has to be R32_UINT.
             RHI::BufferViewDescriptor desc = RHI::BufferViewDescriptor::CreateRaw(0, byteCount);
 
-            auto* rhiBuffer = const_cast<RHI::Buffer*>(indexBufferView.GetBuffer());
+            auto* rhiBuffer = indexBufferView.GetBuffer();
 
             // multi-device buffer bindless read index and offset
             IndexBufferViewIndexAndOffset result{};
