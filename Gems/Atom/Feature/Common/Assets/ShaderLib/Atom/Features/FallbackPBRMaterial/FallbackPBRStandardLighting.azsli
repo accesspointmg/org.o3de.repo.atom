@@ -12,9 +12,10 @@
 
 #include <Atom/Features/MeshInfo/MeshInfoUtil.azsli>
 #include <Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli>
+#include <Atom/Features/MatrixUtility.azsli>
 
 
-Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 barycentrics, sampler linearSampler, float4x4 viewProjectionMatrix, const float mipLevel)
+Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 barycentrics, sampler linearSampler, const float mipLevel = 0)
 {
     Surface surface = (Surface)0;
 
@@ -26,7 +27,11 @@ Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 
 
     VsInput objectVertex;
     LoadInterpolatedVertexData(meshInfo, triangleId, barycentrics, objectVertex);
-
+    
+    // The EvaluateVertexGeometry() - function uses the viewProjectionMatrix to fill the 
+    // vertex.position. We are fine without that though, since the geoData and Surface only use the positionWS,
+    // and the vertex never leaves this function
+    float4x4 viewProjectionMatrix = CreateIdentity4x4();
     VsOutput vertex = EvaluateVertexGeometry(objectVertex, meshInfo.m_objectIdForTransform, viewProjectionMatrix);
     PixelGeometryData geoData = EvaluatePixelGeometry(vertex, meshInfo.m_objectIdForTransform);
 
@@ -39,14 +44,3 @@ Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 
     surface = EvaluateSurface(geoData, textureData, meshInfo.m_lightingChannels);
     return surface;
 }
-
-#ifndef PIPELINE_HAS_VIEW_SRG
-#define PIPELINE_HAS_VIEW_SRG 1
-#endif
-
-#if PIPELINE_HAS_VIEW_SRG
-Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 barycentrics, sampler linearSampler, const float mipLevel)
-{
-    return GetFallbackPBRStandardSurface(meshInfoIndex, triangleId, barycentrics, linearSampler, ViewSrg::m_viewProjectionMatrix, mipLevel);
-}
-#endif // PIPELINE_HAS_VIEW_SRG

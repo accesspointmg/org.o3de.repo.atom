@@ -50,8 +50,7 @@ VsOutput EvaluateVertexGeometry_FallbackPBR(VsInput objectVertex, int objectIdFo
     output.uvs[1] = objectVertex.uv1;
 #endif // MATERIAL_USES_VERTEX_UV
 #if MATERIAL_USES_VERTEX_NORMAL
-    float detObjectToWorldSign = sign(SceneSrg::GetDetObjectToWorld(objectIdForTransform));
-    output.normal = objectVertex.normal * detObjectToWorldSign;
+    output.normal = objectVertex.normal;
 #endif // MATERIAL_USES_VERTEX_NORMAL
 #if MATERIAL_USES_VERTEX_TANGENT
     output.tangent = objectVertex.tangent;

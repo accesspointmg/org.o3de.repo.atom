@@ -52,8 +52,8 @@ namespace AZ::Render
                 }
                 result.m_streamBufferView = RHI::StreamBufferView(
                     *result.m_bufferView->GetBuffer(),
-                    desc.m_elementOffset * elementSize,
-                    desc.m_elementCount * elementSize,
+                    (desc.m_elementOffset * elementSize) + byteOffset,
+                    (desc.m_elementCount * elementSize) - byteOffset,
                     RHI::GetVertexFormatSize(vertexFormat));
             }
             return result;

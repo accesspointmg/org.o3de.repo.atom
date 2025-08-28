@@ -27,14 +27,6 @@
 #include <AzCore/Math/Transform.h>
 #include <RayTracing/RayTracingResourceList.h>
 
-// this define specifies that the mesh buffers and material textures are stored in the Bindless Srg
-// Note1: The previous implementation using separate unbounded arrays is preserved since it demonstrates a TDR caused by
-//        the RHI unbounded array allocation.  This define and the previous codepath can be removed once the TDR is
-//        investigated and resolved.
-// Note2: There are corresponding USE_BINDLESS_SRG defines in the RayTracingSceneSrg.azsli and RayTracingMaterialSrg.azsli
-//        shader files that must match the setting of this define.
-#define USE_BINDLESS_SRG 1
-
 namespace AZ
 {
     namespace Render
@@ -69,11 +61,8 @@ namespace AZ
                 const AZStd::string& intersectionShaderName,
                 const AZStd::unordered_map<int, uint32_t>& bindlessBufferIndices = {}) override;
             void SetProceduralGeometryTypeBindlessBufferIndex(
-                ProceduralGeometryTypeWeakHandle geometryTypeHandle, const AZStd::unordered_map<int, uint32_t>& bindlessBufferIndices) override;
-            MeshInfoHandle CreateMeshInfoForProceduralGeometry() override;
-            void SetMaterialParametersForProceduralGeometry(
-                const MeshInfoHandle& meshInfoHandle, FallbackPBR::MaterialParameters& material) override;
-            void SetMaterialForProceduralGeometry(const MeshInfoHandle& meshInfoHandle, Data::Instance<RPI::Material> material) override;
+                ProceduralGeometryTypeWeakHandle geometryTypeHandle,
+                const AZStd::unordered_map<int, uint32_t>& bindlessBufferIndices) override;
             void AddProceduralGeometry(
                 ProceduralGeometryTypeWeakHandle geometryTypeHandle,
                 const Uuid& uuid,

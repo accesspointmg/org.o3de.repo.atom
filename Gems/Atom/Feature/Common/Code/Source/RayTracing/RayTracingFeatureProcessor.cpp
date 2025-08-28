@@ -132,50 +132,6 @@ namespace AZ
             m_proceduralGeometryInfoBufferNeedsUpdate = true;
         }
 
-        MeshInfoHandle RayTracingFeatureProcessor::CreateMeshInfoForProceduralGeometry()
-        {
-            auto meshInfoHandle = m_meshFeatureProcessor->AcquireMeshInfoEntry();
-            // Update the meshinfo-entry for the procedural mesh
-            m_meshFeatureProcessor->UpdateMeshInfoEntry(
-                meshInfoHandle,
-                [](MeshInfoEntry* entry)
-                {
-                    // enable all lighting channels for the procedural mesh.
-                    entry->m_lightingChannels = AZStd::numeric_limits<uint32_t>::max();
-                    return true;
-                });
-            return meshInfoHandle;
-        }
-
-        void RayTracingFeatureProcessor::SetMaterialParametersForProceduralGeometry(
-            const MeshInfoHandle& meshInfoHandle, FallbackPBR::MaterialParameters& material)
-        {
-            // create a FallbackPBR material entry for the empty meshInfo entry
-            m_meshFeatureProcessor->UpdateFallbackPBRMaterialEntry(
-                meshInfoHandle,
-                [&material](FallbackPBR::MaterialEntry* entry)
-                {
-                    entry->m_materialParameters = material;
-                    return true;
-                });
-        }
-
-        void RayTracingFeatureProcessor::SetMaterialForProceduralGeometry(
-            const MeshInfoHandle& meshInfoHandle, Data::Instance<RPI::Material> material)
-        {
-            // create a FallbackPBR material entry for the empty meshInfo entry
-
-            m_meshFeatureProcessor->UpdateFallbackPBRMaterialEntry(
-                meshInfoHandle,
-                [&material](FallbackPBR::MaterialEntry* entry)
-                {
-                    entry->m_material = material;
-                    FallbackPBR::ConvertMaterial(entry->m_material.get(), entry->m_materialParameters);
-                    entry->m_materialChangeId = material->GetCurrentChangeId();
-                    return true;
-                });
-        }
-
         void RayTracingFeatureProcessor::AddProceduralGeometry(
             ProceduralGeometryTypeWeakHandle geometryTypeHandle,
             const Uuid& uuid,
@@ -196,7 +152,6 @@ namespace AZ
 
             ProceduralGeometry proceduralGeometry;
             proceduralGeometry.m_uuid = uuid;
-            // acquire an empty meshInfo - entry
             proceduralGeometry.m_meshInfoHandle = meshInfoHandle;
             proceduralGeometry.m_typeHandle = geometryTypeHandle;
             proceduralGeometry.m_aabb = aabb;
@@ -278,8 +233,6 @@ namespace AZ
 
             size_t materialInfoIndex = m_proceduralGeometryLookup[uuid];
             m_proceduralGeometry[materialInfoIndex].m_typeHandle->m_instanceCount--;
-
-            m_meshFeatureProcessor->ReleaseMeshInfoEntry(m_proceduralGeometry[materialInfoIndex].m_meshInfoHandle);
 
             if (materialInfoIndex < m_proceduralGeometry.size() - 1)
             {
