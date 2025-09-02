@@ -41,6 +41,6 @@ Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 
         return surface;
     }
     TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, linearSampler, geoData.uvs[0], mipLevel);
-    surface = EvaluateSurface(geoData, textureData, meshInfo.m_lightingChannels);
+    surface = EvaluateSurface(geoData, textureData, materialInfo.m_irradianceColor, meshInfo.m_lightingChannels);
     return surface;
 }

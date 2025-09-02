@@ -93,7 +93,7 @@ PixelGeometryData EvaluatePixelGeometry_FallbackPBR(VsOutput vertex, int objectI
 
 #include <Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli>
 
-Surface EvaluateSurface_FallbackPBR(PixelGeometryData geoData, TextureData textureData, uint lightingChannels)
+Surface EvaluateSurface_FallbackPBR(PixelGeometryData geoData, TextureData textureData, float4 irradianceColor, uint lightingChannels)
 {
     Surface surface = (Surface)0;
 
@@ -110,7 +110,7 @@ Surface EvaluateSurface_FallbackPBR(PixelGeometryData geoData, TextureData textu
 
     surface.emissiveLighting = textureData.m_emissiveColor;
 
-    surface.opacity = textureData.m_baseColor.a;
+    surface.opacity = irradianceColor.a;
 
     // Note: these aren't used, they are re-initialized in the LightingData
     surface.diffuseAmbientOcclusion = 1.0f;
