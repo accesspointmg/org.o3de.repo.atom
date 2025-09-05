@@ -22,5 +22,6 @@ namespace AZ::Render
         Barycentrics,
         Normals,
         UVs,
+        BaseColor
     };
 } // namespace AZ::Render
