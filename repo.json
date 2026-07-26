@@ -1,102 +1,102 @@
 {
-  "$schemaVersion": "2.0.0",
-  "$schema": "https://canonical.o3de.org/o3de-repo-2.0.0.json",
-  "repo": {
-    "name": "org.o3de.repo.atom",
-    "display_name": "Atom Family Repo",
-    "description": "Family repository for the Atom gem: the gem plus one overlay per platform, hoisted from the engine with full git history.",
-    "type": "repo"
-  },
-  "origin": {
-    "name": "The Linux Foundation",
-    "url": "https://www.linuxfoundation.org"
-  },
-  "licenses": [
-    {
-      "license_identifier": "Apache-2.0",
-      "display_name": "Apache License 2.0",
-      "relative_path": "LICENSE_APACHE2.TXT",
-      "comments": [
-        "The licensee of this object has the choice of Apache-2.0 or MIT ",
-        "licenses for the code. See the LICENSE_APACHE2.TXT, LICENSE_MIT.TXT ",
-        "and LICENSE.TXT for more information."
-      ],
-      "scopes": [
-        "All source code"
-      ]
+    "$schemaVersion": "2.0.0",
+    "$schema": "https://canonical.o3de.org/o3de-repo-2.0.0.json",
+    "repo": {
+        "name": "org.o3de.repo.atom",
+        "display_name": "Atom Family Repo",
+        "description": "Family repository for the Atom gem: the gem plus one overlay per platform, hoisted from the engine with full git history.",
+        "type": "repo"
     },
-    {
-      "license_identifier": "MIT",
-      "display_name": "MIT License",
-      "relative_path": "LICENSE_MIT.TXT",
-      "comments": [
-        "The licensee of this object has the choice of Apache-2.0 or MIT ",
-        "licenses for the code. See the LICENSE_APACHE2.TXT, LICENSE_MIT.TXT ",
-        "and LICENSE.TXT for more information."
-      ],
-      "scopes": [
-        "All source code"
-      ]
+    "origin": {
+        "name": "The Linux Foundation",
+        "url": "https://www.linuxfoundation.org"
     },
-    {
-      "license_identifier": "CC0-1.0",
-      "display_name": "Creative Commons Zero v1.0 Universal",
-      "relative_path": "LICENSE_CC0.TXT",
-      "comments": [
-        "All artistic assets in this object are released under the CC0 1.0 ",
-        "Universal (CC0 1.0) Public Domain Dedication license. For more ",
-        "information see the LICENSE_CC0.TXT file."
-      ],
-      "scopes": [
-        "All assets"
-      ]
-    },
-    {
-      "license_identifier": "O3DE",
-      "display_name": "O3DE License",
-      "relative_path": "LICENSE.TXT",
-      "comments": [
-        "The O3DE License is a custom license for the Open 3D Engine. ",
-        "The LICENSE.TXT file contains the full text which describes ",
-        "It primarily describes how to find all third party license information."
-      ],
-      "scopes": [
-        "All third party"
-      ]
-    }
-  ],
-  "canonical_tags": [
-    "Repo"
-  ],
-  "children": {
-    "engines": [],
-    "projects": [],
-    "gems": [
-      "Gems/Atom/gem.2-0-0.json"
+    "licenses": [
+        {
+            "license_identifier": "Apache-2.0",
+            "display_name": "Apache License 2.0",
+            "relative_path": "LICENSE_APACHE2.TXT",
+            "comments": [
+                "The licensee of this object has the choice of Apache-2.0 or MIT ",
+                "licenses for the code. See the LICENSE_APACHE2.TXT, LICENSE_MIT.TXT ",
+                "and LICENSE.TXT for more information."
+            ],
+            "scopes": [
+                "All source code"
+            ]
+        },
+        {
+            "license_identifier": "MIT",
+            "display_name": "MIT License",
+            "relative_path": "LICENSE_MIT.TXT",
+            "comments": [
+                "The licensee of this object has the choice of Apache-2.0 or MIT ",
+                "licenses for the code. See the LICENSE_APACHE2.TXT, LICENSE_MIT.TXT ",
+                "and LICENSE.TXT for more information."
+            ],
+            "scopes": [
+                "All source code"
+            ]
+        },
+        {
+            "license_identifier": "CC0-1.0",
+            "display_name": "Creative Commons Zero v1.0 Universal",
+            "relative_path": "LICENSE_CC0.TXT",
+            "comments": [
+                "All artistic assets in this object are released under the CC0 1.0 ",
+                "Universal (CC0 1.0) Public Domain Dedication license. For more ",
+                "information see the LICENSE_CC0.TXT file."
+            ],
+            "scopes": [
+                "All assets"
+            ]
+        },
+        {
+            "license_identifier": "O3DE",
+            "display_name": "O3DE License",
+            "relative_path": "LICENSE.TXT",
+            "comments": [
+                "The O3DE License is a custom license for the Open 3D Engine. ",
+                "The LICENSE.TXT file contains the full text which describes ",
+                "It primarily describes how to find all third party license information."
+            ],
+            "scopes": [
+                "All third party"
+            ]
+        }
     ],
-    "templates": [],
-    "repos": [],
-    "overlays": [
-      "Overlays/atom.android/overlay.json",
-      "Overlays/atom.appletv/overlay.json",
-      "Overlays/atom.common/overlay.json",
-      "Overlays/atom.emscripten/overlay.json",
-      "Overlays/atom.ios/overlay.json",
-      "Overlays/atom.linux/overlay.json",
-      "Overlays/atom.mac/overlay.json",
-      "Overlays/atom.windows/overlay.json"
-    ]
-  },
-  "remote": {
-    "engines": [],
-    "projects": [],
-    "gems": [],
-    "templates": [],
-    "repos": [],
-    "overlays": []
-  },
-  "source_control": {
-    "git": "https://github.com/accesspointmg/org.o3de.repo.atom.git",
-    "branch": "2.0.0"
-  }
+    "canonical_tags": [
+        "Repo"
+    ],
+    "children": {
+        "engines": [],
+        "projects": [],
+        "gems": [
+            "Gems/Atom/gem.json"
+        ],
+        "templates": [],
+        "repos": [],
+        "overlays": [
+            "Overlays/atom.android/overlay.json",
+            "Overlays/atom.appletv/overlay.json",
+            "Overlays/atom.common/overlay.json",
+            "Overlays/atom.emscripten/overlay.json",
+            "Overlays/atom.ios/overlay.json",
+            "Overlays/atom.linux/overlay.json",
+            "Overlays/atom.mac/overlay.json",
+            "Overlays/atom.windows/overlay.json"
+        ]
+    },
+    "remote": {
+        "engines": [],
+        "projects": [],
+        "gems": [],
+        "templates": [],
+        "repos": [],
+        "overlays": []
+    },
+    "source_control": {
+        "git": "https://github.com/accesspointmg/org.o3de.repo.atom.git",
+        "branch": "2.0.0"
+    }
 }
