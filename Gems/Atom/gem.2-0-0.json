@@ -129,5 +129,16 @@
     "org.o3de.gem.atom",
     "Rendering",
     "Core"
+  ],
+  "releases": [
+    {
+      "name": "2607.0",
+      "source_controls": [
+        {
+          "git": "https://github.com/accesspointmg/o3de-atom.git",
+          "tag": "2607.0"
+        }
+      ]
+    }
   ]
 }
