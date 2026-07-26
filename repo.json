@@ -96,7 +96,7 @@
     "overlays": []
   },
   "source_control": {
-    "git": "https://github.com/accesspointmg/o3de-atom.git",
+    "git": "https://github.com/accesspointmg/org.o3de.repo.atom.git",
     "branch": "2.0.0"
   }
 }
