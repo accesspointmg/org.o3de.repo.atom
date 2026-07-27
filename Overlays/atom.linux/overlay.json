@@ -1,93 +1,86 @@
 {
-  "$schemaVersion": "2.0.0",
-  "$schema": "https://canonical.o3de.org/o3de-overlay-2.0.0.json",
-  "overlay": {
-    "name": "org.o3de.overlay.atom.linux",
-    "version": "0.1.0",
-    "display_name": "atom Linux",
-    "description": "Linux platform delivery for the atom gem, composed into the gem tree at workspace compose time.",
-    "type": "code"
-  },
-  "extends": "org.o3de.gem.atom>=0.1.0",
-  "precedence": 10,
-  "origin": {
-    "name": "The Linux Foundation",
-    "url": "https://www.linuxfoundation.org"
-  },
-  "licenses": [
-    {
-      "license_identifier": "Apache-2.0",
-      "display_name": "Apache License 2.0",
-      "relative_path": "LICENSE_APACHE2.TXT",
-      "comments": [
-        "The licensee of this object has the choice of Apache-2.0 or MIT ",
-        "licenses for the code. See the LICENSE_APACHE2.TXT, LICENSE_MIT.TXT ",
-        "and LICENSE.TXT for more information."
-      ],
-      "scopes": [
-        "All source code"
-      ]
+    "$schemaVersion": "2.0.0",
+    "$schema": "https://canonical.o3de.org/o3de-overlay-2.0.0.json",
+    "overlay": {
+        "name": "org.o3de.overlay.atom.linux",
+        "version": "0.1.0",
+        "display_name": "atom Linux",
+        "description": "Linux platform delivery for the atom gem, composed into the gem tree at workspace compose time.",
+        "type": "code"
     },
-    {
-      "license_identifier": "MIT",
-      "display_name": "MIT License",
-      "relative_path": "LICENSE_MIT.TXT",
-      "comments": [
-        "The licensee of this object has the choice of Apache-2.0 or MIT ",
-        "licenses for the code. See the LICENSE_APACHE2.TXT, LICENSE_MIT.TXT ",
-        "and LICENSE.TXT for more information."
-      ],
-      "scopes": [
-        "All source code"
-      ]
+    "extends": "org.o3de.gem.atom>=0.1.0",
+    "precedence": 10,
+    "origin": {
+        "name": "The Linux Foundation",
+        "url": "https://www.linuxfoundation.org"
     },
-    {
-      "license_identifier": "CC0-1.0",
-      "display_name": "Creative Commons Zero v1.0 Universal",
-      "relative_path": "LICENSE_CC0.TXT",
-      "comments": [
-        "All artistic assets in this object are released under the CC0 1.0 ",
-        "Universal (CC0 1.0) Public Domain Dedication license. For more ",
-        "information see the LICENSE_CC0.TXT file."
-      ],
-      "scopes": [
-        "All assets"
-      ]
-    },
-    {
-      "license_identifier": "O3DE",
-      "display_name": "O3DE License",
-      "relative_path": "LICENSE.TXT",
-      "comments": [
-        "The O3DE License is a custom license for the Open 3D Engine. ",
-        "The LICENSE.TXT file contains the full text which describes ",
-        "It primarily describes how to find all third party license information."
-      ],
-      "scopes": [
-        "All third party"
-      ]
-    }
-  ],
-  "canonical_tags": [
-    "Overlay"
-  ],
-  "platforms": [
-    "Linux"
-  ],
-  "dependent": {
-    "overlays": [
-      "org.o3de.overlay.atom.common>=0.1.0"
-    ]
-  },
-  "releases": [
-    {
-      "name": "2607.0",
-      "source_controls": [
+    "licenses": [
         {
-          "git": "https://github.com/accesspointmg/o3de-atom.git",
-          "tag": "2607.0"
+            "license_identifier": "Apache-2.0",
+            "display_name": "Apache License 2.0",
+            "relative_path": "LICENSE_APACHE2.TXT",
+            "comments": [
+                "The licensee of this object has the choice of Apache-2.0 or MIT ",
+                "licenses for the code. See the LICENSE_APACHE2.TXT, LICENSE_MIT.TXT ",
+                "and LICENSE.TXT for more information."
+            ],
+            "scopes": [
+                "All source code"
+            ]
+        },
+        {
+            "license_identifier": "MIT",
+            "display_name": "MIT License",
+            "relative_path": "LICENSE_MIT.TXT",
+            "comments": [
+                "The licensee of this object has the choice of Apache-2.0 or MIT ",
+                "licenses for the code. See the LICENSE_APACHE2.TXT, LICENSE_MIT.TXT ",
+                "and LICENSE.TXT for more information."
+            ],
+            "scopes": [
+                "All source code"
+            ]
+        },
+        {
+            "license_identifier": "CC0-1.0",
+            "display_name": "Creative Commons Zero v1.0 Universal",
+            "relative_path": "LICENSE_CC0.TXT",
+            "comments": [
+                "All artistic assets in this object are released under the CC0 1.0 ",
+                "Universal (CC0 1.0) Public Domain Dedication license. For more ",
+                "information see the LICENSE_CC0.TXT file."
+            ],
+            "scopes": [
+                "All assets"
+            ]
+        },
+        {
+            "license_identifier": "O3DE",
+            "display_name": "O3DE License",
+            "relative_path": "LICENSE.TXT",
+            "comments": [
+                "The O3DE License is a custom license for the Open 3D Engine. ",
+                "The LICENSE.TXT file contains the full text which describes ",
+                "It primarily describes how to find all third party license information."
+            ],
+            "scopes": [
+                "All third party"
+            ]
         }
-      ]
+    ],
+    "canonical_tags": [
+        "Overlay"
+    ],
+    "platforms": [
+        "Linux"
+    ],
+    "dependent": {
+        "overlays": [
+            "org.o3de.overlay.atom.common>=0.1.0"
+        ]
+    },
+    "releases": [],
+    "source_control": {
+        "git": "https://github.com/accesspointmg/o3de-atom.git"
     }
-  ]
 }
